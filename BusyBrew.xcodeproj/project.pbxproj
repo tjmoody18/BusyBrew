@@ -148,6 +148,8 @@
 				DEVELOPMENT_TEAM = J5P7RQCR4S;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BusyBrew/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Busy Brew";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -176,6 +178,8 @@
 				DEVELOPMENT_TEAM = J5P7RQCR4S;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BusyBrew/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Busy Brew";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
