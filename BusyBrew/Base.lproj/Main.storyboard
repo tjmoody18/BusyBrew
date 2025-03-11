@@ -16,32 +16,18 @@
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Login Page" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fUf-QI-YXf">
-                                <rect key="frame" x="154" y="103" width="85" height="21"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LSR-HV-qPV">
-                                <rect key="frame" x="163" y="409" width="66" height="33"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Login"/>
-                                <connections>
-                                    <segue destination="5Yn-wk-IIl" kind="presentation" modalPresentationStyle="fullScreen" id="gaZ-l4-FzE"/>
-                                </connections>
-                            </button>
-                        </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <navigationItem key="navigationItem" id="KJa-s3-Xmo"/>
+                    <connections>
+                        <outlet property="view" destination="8bC-Xf-vdC" id="SUy-3o-4FD"/>
+                        <segue destination="nog-b6-SxX" kind="show" identifier="LoginSegue" id="SZT-X1-JOZ"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1061.8320610687022" y="3.5211267605633805"/>
+            <point key="canvasLocation" x="1047" y="4"/>
         </scene>
         <!--Home View Controller-->
         <scene sceneID="TCS-2A-YL2">
@@ -64,7 +50,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KpT-Po-hKT" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1913.740458015267" y="3.5211267605633805"/>
+            <point key="canvasLocation" x="3240" y="4"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="TPX-Ck-aXD">
@@ -84,7 +70,49 @@
             </objects>
             <point key="canvasLocation" x="3.8167938931297707" y="3.5211267605633805"/>
         </scene>
+        <!--Login View Controller-->
+        <scene sceneID="qER-st-DLz">
+            <objects>
+                <viewController id="nog-b6-SxX" customClass="LoginViewController" customModule="BusyBrew" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Wdu-CV-odf">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="no5-NP-6yj"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="3Oz-OG-BTF"/>
+                    <connections>
+                        <segue destination="HaQ-AT-8Cu" kind="show" identifier="RegisterSegue" id="Hp7-5L-yhr"/>
+                        <segue destination="5Yn-wk-IIl" kind="presentation" identifier="LoginToHomeSegue" modalPresentationStyle="fullScreen" id="Pfi-zx-uDf"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="L9m-PO-22s" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1827" y="4"/>
+        </scene>
+        <!--Register View Controller-->
+        <scene sceneID="P9u-KK-ufi">
+            <objects>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="mD6-0Z-W4f" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <viewController id="HaQ-AT-8Cu" customClass="RegisterViewController" customModule="BusyBrew" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="gLQ-DA-wKF">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="9Gs-uU-s9d"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="Lgd-eM-6Zd"/>
+                    <connections>
+                        <segue destination="5Yn-wk-IIl" kind="presentation" modalPresentationStyle="fullScreen" id="0La-mC-vTc"/>
+                    </connections>
+                </viewController>
+            </objects>
+            <point key="canvasLocation" x="2546" y="558"/>
+        </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="Pfi-zx-uDf"/>
+    </inferredMetricsTieBreakers>
     <resources>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
