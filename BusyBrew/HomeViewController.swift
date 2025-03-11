@@ -103,13 +103,16 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
     
     private func findNearbyPlaces(by query: String) {
         // clear any annotations
-        print("Finding nearby places...")
+       
         mapView.removeAnnotations(mapView.annotations)
         
+        print("Requesting search...")
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = query
         request.region = mapView.region
+        print("Requesting completed")
         
+        print("Searching for places...")
         let search = MKLocalSearch(request: request)
         search.start { [weak self] response, error in
             guard let response = response, error == nil else { return }
@@ -119,7 +122,9 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
                 self?.mapView.addAnnotation(place)}
             
             if let places = self?.places {
+                print("Presenting...")
                 self?.presentPlacesSheet(places: places)
+                print("Presenting Completed...")
             }
             
         }
