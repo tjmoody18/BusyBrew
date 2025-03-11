@@ -30,6 +30,14 @@ class PlaceDetailViewController: UIViewController {
         return label
     }()
     
+    var directionsButton: UIButton = {
+        var config = UIButton.Configuration.bordered()
+        let button = UIButton(configuration: config)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("Directions", for: .normal)
+        return button
+    }()
+    
     init(place: PlaceAnnotation) {
         self.place = place
         super.init(nibName: nil, bundle: nil)
@@ -43,6 +51,17 @@ class PlaceDetailViewController: UIViewController {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder has not been implemented")
+    }
+    
+    // Open Apple Maps when pressed
+    @objc func directionsButtonTapped(_ sender: UIButton) {
+        let coordinate = place.location.coordinate
+        guard let url = URL(string: "http://maps.apple.com/?daddr=\(coordinate.latitude),\(coordinate.longitude)") else {
+            print("Error opening Apple Maps")
+            return
+        }
+       
+        UIApplication.shared.open(url)
     }
     
     private func setupUI() {
@@ -62,6 +81,18 @@ class PlaceDetailViewController: UIViewController {
         
         nameLabel.widthAnchor.constraint(equalToConstant: view.bounds.width - 20).isActive = true
         
+        // Add contact buttons as individual stackview
+        let contactStackView = UIStackView()
+        contactStackView.translatesAutoresizingMaskIntoConstraints = false
+        contactStackView.axis = .horizontal // place buttons side by side horizontally
+        contactStackView.spacing = UIStackView.spacingUseSystem
+        
+        
+        directionsButton.addTarget(self, action: #selector(directionsButtonTapped), for: .touchUpInside)
+        
+        contactStackView.addArrangedSubview(directionsButton)
+        
+        stackView.addArrangedSubview(contactStackView)
         view.addSubview(stackView)
     }
 }
