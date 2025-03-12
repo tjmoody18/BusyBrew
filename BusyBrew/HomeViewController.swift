@@ -13,6 +13,7 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
     
     var locationManager: CLLocationManager?
     private var places: [PlaceAnnotation] = []
+    let menuSegueIdentifier = "MenuSegue"
     
     lazy var mapView: MKMapView = {
         let mapView = MKMapView()
@@ -34,6 +35,21 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         searchTextField.translatesAutoresizingMaskIntoConstraints = false
         return searchTextField
     }()
+    
+    lazy var menuButton: UIButton = {
+        let menuButton = UIButton(type: .custom)
+        menuButton.backgroundColor = background1Light
+        menuButton.setTitleColor(.white, for: .normal)
+        menuButton.translatesAutoresizingMaskIntoConstraints = false
+        menuButton.layer.cornerRadius = 5
+        menuButton.setImage(UIImage(named: "Grid.svg"), for: .normal)
+        menuButton.addTarget(self, action: #selector(menuButtonClicked), for: .touchUpInside)
+        return menuButton
+    }()
+    
+    @objc func menuButtonClicked() {
+        performSegue(withIdentifier: menuSegueIdentifier, sender: self)
+    }
         
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,14 +67,23 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
     func setupUI() {
         view.addSubview(searchTextField)
         view.addSubview(mapView)
+        view.addSubview(menuButton)
         view.bringSubviewToFront(searchTextField)
         
         // search text field constraints
         searchTextField.heightAnchor.constraint(equalToConstant: 44).isActive = true
-        searchTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        searchTextField.widthAnchor.constraint(equalToConstant: view.bounds.size.width / 1.2).isActive = true
+        searchTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40).isActive = true
         searchTextField.topAnchor.constraint(equalTo: view.topAnchor, constant: 60).isActive = true
         searchTextField.returnKeyType = .go
+        searchTextField.trailingAnchor.constraint(equalTo: menuButton.leadingAnchor, constant: -20).isActive = true
+        
+        // menu button constraints
+        menuButton.topAnchor.constraint(equalTo: searchTextField.topAnchor).isActive = true
+        menuButton.heightAnchor.constraint(equalTo: searchTextField.heightAnchor).isActive = true
+        menuButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40).isActive = true
+        menuButton.widthAnchor.constraint(equalToConstant: 45).isActive = true
+        
+        
         
         // map view contraints
         mapView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true

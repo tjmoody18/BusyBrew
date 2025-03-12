@@ -21,6 +21,9 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         setupUI()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            self.getStartedClicked()
+        }
     }
     
     func setupUI() {
