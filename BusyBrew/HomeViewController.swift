@@ -61,6 +61,7 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         locationManager?.requestLocation()
         locationManager?.startUpdatingLocation()
         setupUI()
+        
         // Do any additional setup after loading the view.
     }
     
@@ -135,6 +136,7 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = query
         request.region = mapView.region
+        request.pointOfInterestFilter = .init(including: [.cafe])
         print("Requesting completed")
         
         print("Searching for places...")
@@ -178,9 +180,19 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         presentPlacesSheet(places: self.places)
     }
     
+    
     // CLLocationManagerDelegate conform functions
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+           
+           let region = MKCoordinateRegion(center: location.coordinate, latitudinalMeters: 750, longitudinalMeters: 750)
+           mapView.setRegion(region, animated: true)
         
+        // Wait for map to finish zooming so it only show nearby coffee shops. I'm not sure if this is the best way to do this or a temporary solution but right now its just delaying the findyNearbyPlaces call
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                // Automatically display coffee shops when map opened
+                self.findNearbyPlaces(by: "Coffee")
+            }
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
