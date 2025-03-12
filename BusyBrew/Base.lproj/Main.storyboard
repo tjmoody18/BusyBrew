@@ -22,7 +22,7 @@
                     <navigationItem key="navigationItem" id="KJa-s3-Xmo"/>
                     <connections>
                         <outlet property="view" destination="8bC-Xf-vdC" id="SUy-3o-4FD"/>
-                        <segue destination="nog-b6-SxX" kind="show" identifier="LoginSegue" id="SZT-X1-JOZ"/>
+                        <segue destination="nog-b6-SxX" kind="presentation" identifier="LoginSegue" modalPresentationStyle="fullScreen" id="SZT-X1-JOZ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -82,7 +82,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="3Oz-OG-BTF"/>
                     <connections>
-                        <segue destination="HaQ-AT-8Cu" kind="show" identifier="RegisterSegue" id="Hp7-5L-yhr"/>
+                        <segue destination="HaQ-AT-8Cu" kind="presentation" identifier="RegisterSegue" modalPresentationStyle="fullScreen" id="Hp7-5L-yhr"/>
                         <segue destination="5Yn-wk-IIl" kind="presentation" identifier="LoginToHomeSegue" modalPresentationStyle="fullScreen" id="Pfi-zx-uDf"/>
                     </connections>
                 </viewController>
@@ -93,7 +93,6 @@
         <!--Register View Controller-->
         <scene sceneID="P9u-KK-ufi">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="mD6-0Z-W4f" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
                 <viewController id="HaQ-AT-8Cu" customClass="RegisterViewController" customModule="BusyBrew" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="gLQ-DA-wKF">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
@@ -103,15 +102,16 @@
                     </view>
                     <navigationItem key="navigationItem" id="Lgd-eM-6Zd"/>
                     <connections>
-                        <segue destination="5Yn-wk-IIl" kind="presentation" modalPresentationStyle="fullScreen" id="0La-mC-vTc"/>
+                        <segue destination="5Yn-wk-IIl" kind="presentation" identifier="RegisterToHomeSegue" modalPresentationStyle="fullScreen" id="0La-mC-vTc"/>
                     </connections>
                 </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="mD6-0Z-W4f" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2546" y="558"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="Pfi-zx-uDf"/>
+        <segue reference="0La-mC-vTc"/>
     </inferredMetricsTieBreakers>
     <resources>
         <systemColor name="systemBackgroundColor">
