@@ -18,13 +18,13 @@ class SettingsViewController: UIViewController {
     }
     
     func setupUI() {
-        view.backgroundColor = background1
+        view.backgroundColor = background3
         createBackButton()
     }
     
     func createBackButton() {
         backButton.setTitle("Back", for: .normal)
-        backButton.setTitleColor(.white, for: .normal)
+        backButton.setTitleColor(.black, for: .normal)
         backButton.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         let attributes: [NSAttributedString.Key: Any] = [
             .underlineStyle: NSUnderlineStyle.single.rawValue
