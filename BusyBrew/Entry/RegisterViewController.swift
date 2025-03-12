@@ -41,7 +41,7 @@ class RegisterViewController: UIViewController {
         pageTitle.textAlignment = .left
         pageTitle.textColor = .white
         let attributes: [NSAttributedString.Key: Any] = [
-            .kern: -2.0  // Negative value to reduce the letter spacing
+            .kern: -2.0  // reduce the letter spacing
         ]
         pageTitle.attributedText = NSAttributedString(string: pageTitle.text ?? "", attributes: attributes)
         self.view.addSubview(pageTitle)

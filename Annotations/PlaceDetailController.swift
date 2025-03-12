@@ -13,27 +13,20 @@ class PlaceDetailViewController: UIViewController {
     
     lazy var nameLabel: UILabel = {
         let label = UILabel()
-        label.numberOfLines = 1
-//        label.lineBreakMode = .byWordWrapping
+        label.numberOfLines = 0
+        label.lineBreakMode = .byWordWrapping
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .left
-        label.font = UIFont.systemFont(ofSize: 48, weight: .bold)
+        label.font = UIFont.preferredFont(forTextStyle: .title1)
         return label
-    }()
-    
-    lazy var favButton: UIButton = {
-        let button = UIButton(type: .custom)
-        button.backgroundColor = background1
-        return button
     }()
     
     lazy var addressLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .left
-        label.font = UIFont.systemFont(ofSize: 12, weight: .regular)
+        label.font = UIFont.preferredFont(forTextStyle: .body)
         label.alpha = 0.4
-        label.numberOfLines = 1
         return label
     }()
     
@@ -72,14 +65,21 @@ class PlaceDetailViewController: UIViewController {
     }
     
     private func setupUI() {
-        view.backgroundColor = background3
-        let topSection = UIView()
-        topSection.translatesAutoresizingMaskIntoConstraints = false
-        let attributes: [NSAttributedString.Key: Any] = [
-            .kern: -2.0  // reduce the letter spacing
-        ]
-        nameLabel.attributedText = NSAttributedString(string: place.name, attributes: attributes)
+        let stackView = UIStackView()
+        stackView.alignment = .leading
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.spacing = UIStackView.spacingUseDefault
+        stackView.isLayoutMarginsRelativeArrangement = true
+        stackView.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
+        
+        nameLabel.text = place.name
         addressLabel.text = place.address
+        
+        stackView.addArrangedSubview(nameLabel)
+        stackView.addArrangedSubview(addressLabel)
+        
+        nameLabel.widthAnchor.constraint(equalToConstant: view.bounds.width - 20).isActive = true
         
         // Add contact buttons as individual stackview
         let contactStackView = UIStackView()
@@ -87,30 +87,12 @@ class PlaceDetailViewController: UIViewController {
         contactStackView.axis = .horizontal // place buttons side by side horizontally
         contactStackView.spacing = UIStackView.spacingUseSystem
         
-        contactStackView.addArrangedSubview(addressLabel)
-        contactStackView.addArrangedSubview(directionsButton)
         
         directionsButton.addTarget(self, action: #selector(directionsButtonTapped), for: .touchUpInside)
         
-        view.addSubview(topSection)
-        NSLayoutConstraint.activate([
-            topSection.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
-            topSection.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
-            topSection.topAnchor.constraint(equalTo: view.topAnchor, constant: 50)
-        ])
+        contactStackView.addArrangedSubview(directionsButton)
         
-        topSection.addSubview(nameLabel)
-        topSection.addSubview(contactStackView)
-        
-        NSLayoutConstraint.activate([
-            nameLabel.topAnchor.constraint(equalTo: topSection.topAnchor),
-            nameLabel.leadingAnchor.constraint(equalTo: topSection.leadingAnchor)
-        ])
-        
-        NSLayoutConstraint.activate([
-            contactStackView.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
-            contactStackView.trailingAnchor.constraint(equalTo: topSection.trailingAnchor),
-            contactStackView.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 5)
-        ])
+        stackView.addArrangedSubview(contactStackView)
+        view.addSubview(stackView)
     }
 }

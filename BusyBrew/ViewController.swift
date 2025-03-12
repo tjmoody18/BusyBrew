@@ -65,7 +65,7 @@ class ViewController: UIViewController {
         appName.textColor = .white
         appName.font = UIFont.systemFont(ofSize: 80, weight: .semibold)
         let attributes: [NSAttributedString.Key: Any] = [
-            .kern: -2.0  // Negative value to reduce the letter spacing
+            .kern: -2.0  // reduce the letter spacing
         ]
         appName.attributedText = NSAttributedString(string: appName.text ?? "", attributes: attributes)
         self.view.addSubview(appName)
