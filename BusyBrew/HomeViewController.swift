@@ -138,7 +138,7 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         request.pointOfInterestFilter = .init(including: [.cafe])
         print("Requesting completed")
         
-        print("Searching for places...")
+        print("Searching for places (\(query))...")
         let search = MKLocalSearch(request: request)
         search.start { [weak self] response, error in
             guard let response = response, error == nil else { return }
@@ -148,12 +148,54 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
                 self?.mapView.addAnnotation(place)}
             
             if let places = self?.places {
+                self?.adjustRegionToAnnotations(places: places)
                 print("Presenting...")
                 self?.presentPlacesSheet(places: places)
                 print("Presenting Completed...")
             }
         }
     }
+    
+    // Zoom map in/out so all markers are on screen
+    private func adjustRegionToAnnotations (places: [PlaceAnnotation]) {
+        if places.isEmpty { return }
+        
+        var minLat = Double.greatestFiniteMagnitude
+        var minLong = Double.greatestFiniteMagnitude
+        var maxLat = -Double.greatestFiniteMagnitude
+        var maxLong = -Double.greatestFiniteMagnitude
+        
+        // find min lat/long (top right / bottom left coords)
+        for place in places {
+            let lat = place.coordinate.latitude
+            let long = place.coordinate.longitude
+            
+            minLat = min(minLat, lat)
+            minLong = min(minLong, long)
+            maxLat = max(maxLat, lat)
+            maxLong = max(maxLong, long)
+        }
+        
+        // calculate distance between top right and bottom left
+        var topRightLocation = CLLocation(latitude: maxLat, longitude: maxLong)
+        var bottomLeftLocation = CLLocation(latitude: minLat, longitude: minLong)
+        var distance = topRightLocation.distance(from: bottomLeftLocation)
+        
+        // find center between top right and bottom left
+        let centerCoords = CLLocationCoordinate2D(
+            latitude: (minLat + maxLat) / 2,
+            longitude: (minLong + maxLong) / 2
+        )
+        
+        // set region to center around top right and bottom left and zoom out by the distance
+        let region = MKCoordinateRegion(
+            center: centerCoords,
+            span: MKCoordinateSpan(latitudeDelta: distance / 111319.5, longitudeDelta: 0)
+            )
+        
+        mapView.setRegion(region, animated: true)
+    }
+
     
     // MKMapViewDelegate conform functions
     
