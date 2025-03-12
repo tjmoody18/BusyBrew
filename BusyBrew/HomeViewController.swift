@@ -234,7 +234,6 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
             
             // add label showing name of place
             let label = UILabel()
-            label.text = annotation.name
             label.numberOfLines = 1
             view?.detailCalloutAccessoryView = label
             
