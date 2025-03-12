@@ -61,8 +61,6 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         locationManager?.requestLocation()
         locationManager?.startUpdatingLocation()
         setupUI()
-        
-        // Do any additional setup after loading the view.
     }
     
     func setupUI() {
@@ -93,7 +91,7 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         mapView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
     }
     
-    // check whether if user allowed access to location
+    // check if user allowed access to location
     private func checkLocationAuthorizatation() {
         guard let locationManager = locationManager,
               let location = locationManager.location else {return}
@@ -112,6 +110,7 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         }
     }
     
+    // display table listing nearby places
     private func presentPlacesSheet(places: [PlaceAnnotation]) {
         
         guard let locationManager = locationManager,
@@ -153,10 +152,7 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
                 self?.presentPlacesSheet(places: places)
                 print("Presenting Completed...")
             }
-            
         }
-        
-        
     }
     
     // MKMapViewDelegate conform functions
@@ -168,6 +164,7 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         }
     }
     
+    // highlight place in table when selected on map
     func mapView(_ mapView: MKMapView, didSelect annotation: any MKAnnotation) {
         
         // clear other selections
@@ -178,6 +175,29 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         placeAnnotation?.isSelected = true
         
         presentPlacesSheet(places: self.places)
+    }
+    
+    // set markers to show coffee cup
+    func mapView(_ mapView: MKMapView, viewFor annotation: any MKAnnotation) -> MKAnnotationView? {
+        guard let annotation = annotation as? PlaceAnnotation else { return nil }
+        
+        var view: MKMarkerAnnotationView? = mapView.dequeueReusableAnnotationView(withIdentifier: "PlaceAnnotation") as? MKMarkerAnnotationView
+        if view == nil {
+            view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "PlaceAnnotation")
+            view?.canShowCallout = true
+        } else {
+            view?.annotation = annotation
+        }
+            view?.glyphImage = UIImage(systemName: "cup.and.saucer.fill")
+            
+            // add label showing name of place
+            let label = UILabel()
+            label.text = annotation.name
+            label.numberOfLines = 1
+            view?.detailCalloutAccessoryView = label
+            
+        
+        return view
     }
     
     
