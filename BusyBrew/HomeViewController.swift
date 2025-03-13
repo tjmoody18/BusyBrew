@@ -177,9 +177,9 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         }
         
         // calculate distance between top right and bottom left
-        var topRightLocation = CLLocation(latitude: maxLat, longitude: maxLong)
-        var bottomLeftLocation = CLLocation(latitude: minLat, longitude: minLong)
-        var distance = topRightLocation.distance(from: bottomLeftLocation)
+        let topRightLocation = CLLocation(latitude: maxLat, longitude: maxLong)
+        let bottomLeftLocation = CLLocation(latitude: minLat, longitude: minLong)
+        let distance = topRightLocation.distance(from: bottomLeftLocation)
         
         // find center between top right and bottom left
         let centerCoords = CLLocationCoordinate2D(
@@ -217,6 +217,10 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         placeAnnotation?.isSelected = true
         
         presentPlacesSheet(places: self.places)
+        
+        // center map around selected location
+        let region = MKCoordinateRegion(center: selectionAnnotation.coordinate, latitudinalMeters: 750, longitudinalMeters: 750)
+        mapView.setRegion(region, animated: true)
     }
     
     // set markers to show coffee cup
