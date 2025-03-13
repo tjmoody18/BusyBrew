@@ -15,7 +15,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
     let uploadButton = UIButton(type: .system)
     let imagePicker = UIImagePickerController()
     let commentTitle = UILabel()
-f    let commentField = UITextField()
+    let commentField = UITextField()
     let submitButton = UIButton(type: .system)
     let seperator = UIView()
     
