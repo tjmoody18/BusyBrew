@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class LoginViewController: UIViewController {
     
@@ -31,8 +32,31 @@ class LoginViewController: UIViewController {
         createLoginButton()
     }
     
+    func showAlert(title: String, message: String) {
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+    }
+    
     @objc func loginButtonClicked() {
-        performSegue(withIdentifier: toHomeSegueIdentifier, sender: self)
+        guard let email = userTextField.text, !email.isEmpty, let password = passwordTextField.text, !password.isEmpty
+        else {
+            showAlert(title: "Error", message: "Email and password cannot be empty.")
+            return
+        }
+        
+        Auth.auth().signIn(withEmail: email, password: password) { authResult, error in
+            if let error = error {
+                self.showAlert(title: "Login Failed", message: "Please use a proper username and password. If needed register an account.")
+                return
+            }
+            
+            print("User logged in: \(authResult?.user.email ?? "No email")")
+            
+            DispatchQueue.main.async {
+                self.performSegue(withIdentifier: self.toHomeSegueIdentifier, sender: self)
+            }
+        }
     }
     
     @objc func registerButtonClicked() {
@@ -97,7 +121,9 @@ class LoginViewController: UIViewController {
             .foregroundColor: UIColor.white  // Set the placeholder color to white
         ]
         userTextField.attributedPlaceholder = NSAttributedString(string: "Enter email", attributes: placeholderAttributes)
-                
+        userTextField.autocapitalizationType = .none
+        userTextField.keyboardType = .emailAddress
+        userTextField.autocorrectionType = .no
         userTextField.backgroundColor = background1Light
         userTextField.translatesAutoresizingMaskIntoConstraints = false
         userTextField.layer.cornerRadius = 10
@@ -131,7 +157,10 @@ class LoginViewController: UIViewController {
             .foregroundColor: UIColor.white  // Set the placeholder color to white
         ]
         passwordTextField.attributedPlaceholder = NSAttributedString(string: "Enter password", attributes: placeholderAttributes)
-                
+        passwordTextField.isSecureTextEntry = true
+        passwordTextField.autocapitalizationType = .none
+        passwordTextField.autocorrectionType = .no
+        passwordTextField.textContentType = .oneTimeCode
         passwordTextField.backgroundColor = background1Light
         passwordTextField.translatesAutoresizingMaskIntoConstraints = false
         passwordTextField.layer.cornerRadius = 10

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class RegisterViewController: UIViewController {
 
@@ -33,7 +34,30 @@ class RegisterViewController: UIViewController {
     }
     
     @objc func registerButtonClicked() {
-        performSegue(withIdentifier: toHomeSegueIdentifier, sender: self)
+        guard let email = userTextField.text, !email.isEmpty, let password = passwordTextField.text, !password.isEmpty
+        else {
+            showAlert(title: "Error", message: "Email and password cannot be empty.")
+            return
+        }
+
+        Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+            if let error = error {
+                self.showAlert(title: "Registration Failed", message: error.localizedDescription)
+                return
+            }
+            
+            print("User registered successfully: \(authResult?.user.email ?? "")")
+            
+            DispatchQueue.main.async {
+                self.performSegue(withIdentifier: self.toHomeSegueIdentifier, sender: self)
+            }
+        }
+    }
+    
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
     
     func createTitle() {
@@ -101,7 +125,11 @@ class RegisterViewController: UIViewController {
         userTextField.textColor = .white
         userTextField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 15, height: 0))
         userTextField.leftViewMode = .always
+        userTextField.autocapitalizationType = .none
+        userTextField.keyboardType = .emailAddress
+        userTextField.autocorrectionType = .no
         self.view.addSubview(userTextField)
+        
         
         NSLayoutConstraint.activate([
             userLabel.topAnchor.constraint(equalTo: pageTitle.bottomAnchor, constant: 60),
@@ -137,6 +165,9 @@ class RegisterViewController: UIViewController {
         passwordTextField.leftViewMode = .always
         passwordTextField.isSecureTextEntry = true
         self.view.addSubview(passwordTextField)
+        passwordTextField.textContentType = .oneTimeCode
+        passwordTextField.autocorrectionType = .no
+        passwordTextField.autocapitalizationType = .none
         
         NSLayoutConstraint.activate([
             passwordLabel.topAnchor.constraint(equalTo: userTextField.bottomAnchor, constant: 20),
