@@ -19,3 +19,5 @@ let background2 = UIColor(red: 194/255.0, green: 153/255.0, blue: 83/255.0, alph
 // #F3ECDE
 let background3 = UIColor(red: 243/255.0, green: 236/255.0, blue: 222/255.0, alpha: 1.0)
 
+// #B25A3B
+let background4 = UIColor(red: 178/255.0, green: 90/255.0, blue: 59/255.0, alpha: 1.0)
