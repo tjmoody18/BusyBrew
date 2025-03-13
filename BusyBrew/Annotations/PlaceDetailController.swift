@@ -101,7 +101,7 @@ class PlaceDetailViewController: UIViewController {
     @objc func directionsButtonTapped(_ sender: UIButton) {
         let coordinate = place.location.coordinate
         guard let url = URL(string: "http://maps.apple.com/?daddr=\(coordinate.latitude),\(coordinate.longitude)") else {
-            print("Error opening Apple Maps")
+            print("Error opening Apple Maps.")
             return
         }
        
