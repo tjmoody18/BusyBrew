@@ -53,7 +53,7 @@ class PlacesTableViewController: UITableViewController {
         
         var content = cell.defaultContentConfiguration()
         content.text = place.name
-        content.secondaryText = formatDistanceForDisplay(calculateDistance(from: userLocation, to: place.location))
+        content.secondaryText = "\(formatDistanceForDisplay(calculateDistance(from: userLocation, to: place.location))) ⋅ \(place.address)"
         
         cell.contentConfiguration = content
         cell.backgroundColor = place.isSelected ? UIColor.lightGray: UIColor.clear // change color when selected

@@ -30,7 +30,7 @@ class PlaceAnnotation: MKPointAnnotation {
     }
     
     var address: String {
-        "\(mapItem.placemark.subThoroughfare ?? "") \(mapItem.placemark.thoroughfare ?? "") \(mapItem.placemark.locality ?? "") \(mapItem.placemark.countryCode ?? "")"
+        "\(mapItem.placemark.subThoroughfare ?? "") \(mapItem.placemark.thoroughfare ?? ""), \(mapItem.placemark.locality ?? "")"
     }
     
     var location: CLLocation {
