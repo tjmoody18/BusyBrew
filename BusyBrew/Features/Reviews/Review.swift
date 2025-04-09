@@ -37,7 +37,20 @@ struct Review: Codable, Identifiable {
         self.outlets = outlets
         self.photos = photos
     }
+    
+    var dictionary: [String: Any] {
+        return [
+            "uid": uid,
+            "date": date,
+            "text": text,
+            "wifi": wifi,
+            "cleanliness": cleanliness,
+            "outlets": outlets,
+            "photos" : photos
+        ]
+    }
 }
+
 
 extension Review {
     // empty cafe on creation

@@ -31,7 +31,17 @@ struct Cafe: Codable, Identifiable {
         self.reviews = reviews
         self.status = status
     }
+    
+    var dictionary: [String: Any] {
+        return [
+            "uid": uid,
+            "name": name,
+            "reviews": reviews,
+            "status": status
+        ]
+    }
 }
+
 
 extension Cafe {
     // empty cafe on creation
