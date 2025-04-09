@@ -20,12 +20,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         // Use dev firebase project for testing locally
-        if let filePath = Bundle.main.path(forResource: "GoogleService-Info-Dev", ofType: "plist"),
-               let options = FirebaseOptions(contentsOfFile: filePath) {
-                FirebaseApp.configure(options: options)
-            } else {
-                fatalError("Couldn't find GoogleService-Info-Dev.plist")
-            }
+//        if let filePath = Bundle.main.path(forResource: "GoogleService-Info-Dev", ofType: "plist"),
+//               let options = FirebaseOptions(contentsOfFile: filePath) {
+//                FirebaseApp.configure(options: options)
+//            } else {
+//                fatalError("Couldn't find GoogleService-Info-Dev.plist")
+//            }
+        FirebaseApp.configure()
         
         
         #if EMULATORS
