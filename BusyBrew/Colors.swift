@@ -21,3 +21,9 @@ let background3 = UIColor(red: 243/255.0, green: 236/255.0, blue: 222/255.0, alp
 
 // #B25A3B
 let background4 = UIColor(red: 178/255.0, green: 90/255.0, blue: 59/255.0, alpha: 1.0)
+
+// #BEBEBE
+let grayText = UIColor(red: 190/255.0, green: 190/255.0, blue: 190/255.0, alpha: 1.0)
+
+// BFF29C
+let lightGreenText = UIColor(red: 191/255.0, green: 242/255.0, blue: 156/255.0, alpha: 1.0)

@@ -14,6 +14,11 @@ class PlaceDetailViewController: UIViewController {
     let rating = 5.0
     let categories = ["wifi quality", "cleanliness", "outlets availability"]
     
+    let reviews = [
+        Review(uid: "Jim", date: "2/28/2025", text: "I really enjoyed this shop", wifi: 5, cleanliness: 5, outlets: 5, photos: []),
+        Review(uid: "Tommy", date: "2/2/2025", text: "I really enjoyed this shop", wifi: 5, cleanliness: 5, outlets: 3, photos: ["cafe.png", "cafe.png"]),
+    ]
+    
     lazy var nameLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 1
@@ -104,8 +109,93 @@ class PlaceDetailViewController: UIViewController {
             print("Error opening Apple Maps")
             return
         }
-       
         UIApplication.shared.open(url)
+    }
+    
+    func reviewItem(review: Review) -> UIView {
+        let reviewItem = UIView()
+        reviewItem.translatesAutoresizingMaskIntoConstraints = false
+        let username = UILabel()
+        username.translatesAutoresizingMaskIntoConstraints = false
+        username.text = review.uid
+        username.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        
+        let date = UILabel()
+        date.translatesAutoresizingMaskIntoConstraints = false
+        date.text = review.date
+        date.textColor = background1
+        date.font = UIFont.systemFont(ofSize: 10, weight: .semibold)
+        
+        let ratingStack = UILabel()
+        ratingStack.translatesAutoresizingMaskIntoConstraints = false
+        ratingStack.text = "wifi availability: \(review.wifi)/5    cleanliness: \(review.cleanliness)/5    outlets availability: \(review.outlets)/5"
+        ratingStack.font = UIFont.systemFont(ofSize: 10, weight: .semibold)
+        
+        let textLabel = UILabel()
+        textLabel.translatesAutoresizingMaskIntoConstraints = false
+        textLabel.text = review.text
+        textLabel.font = UIFont.systemFont(ofSize: 10, weight: .regular)
+        
+        reviewItem.addSubview(username)
+        reviewItem.addSubview(date)
+        reviewItem.addSubview(ratingStack)
+        reviewItem.addSubview(textLabel)
+        
+        let imageStack = UIStackView()
+        imageStack.translatesAutoresizingMaskIntoConstraints = false
+        imageStack.axis = .horizontal
+        imageStack.spacing = 10
+
+        reviewItem.addSubview(imageStack)
+        if review.photos.count > 0 {
+            for photo in review.photos {
+                let image = UIImage(named: photo)
+                let imageView = UIImageView(image: image)
+                imageView.translatesAutoresizingMaskIntoConstraints = false
+                imageView.contentMode = .scaleToFill
+                imageView.clipsToBounds = true
+                imageView.widthAnchor.constraint(equalToConstant: 100).isActive = true
+                imageView.heightAnchor.constraint(equalToConstant: 60).isActive = true
+                imageStack.addArrangedSubview(imageView)
+            }
+        }
+        
+        
+        NSLayoutConstraint.activate([
+            username.leadingAnchor.constraint(equalTo: reviewItem.leadingAnchor),
+            username.trailingAnchor.constraint(equalTo: reviewItem.trailingAnchor),
+            username.topAnchor.constraint(equalTo: reviewItem.topAnchor),
+            
+            date.leadingAnchor.constraint(equalTo: reviewItem.leadingAnchor),
+            date.trailingAnchor.constraint(equalTo: reviewItem.trailingAnchor),
+            date.topAnchor.constraint(equalTo: username.bottomAnchor, constant: 1),
+            
+            ratingStack.leadingAnchor.constraint(equalTo: reviewItem.leadingAnchor),
+            ratingStack.trailingAnchor.constraint(equalTo: reviewItem.trailingAnchor),
+            ratingStack.topAnchor.constraint(equalTo: date.bottomAnchor, constant: 1),
+            
+            textLabel.leadingAnchor.constraint(equalTo: reviewItem.leadingAnchor),
+            textLabel.trailingAnchor.constraint(equalTo: reviewItem.trailingAnchor),
+            textLabel.topAnchor.constraint(equalTo: ratingStack.bottomAnchor, constant: 3),
+            
+            imageStack.leadingAnchor.constraint(equalTo: reviewItem.leadingAnchor),
+//            imageStack.trailingAnchor.constraint(equalTo: reviewItem.trailingAnchor),
+            imageStack.topAnchor.constraint(equalTo: textLabel.bottomAnchor, constant: 8),
+            
+            reviewItem.bottomAnchor.constraint(equalTo: imageStack.bottomAnchor)
+        ])
+        
+        return reviewItem
+    }
+    
+    func createSeparator() -> UIView {
+        let separator = UIView()
+        separator.backgroundColor = .white
+        separator.layer.cornerRadius = 1
+        separator.layer.masksToBounds = true
+        separator.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(separator)
+        return separator
     }
     
     private func setupUI() {
@@ -113,6 +203,7 @@ class PlaceDetailViewController: UIViewController {
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
+        scrollView.isScrollEnabled = true
 
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -120,7 +211,11 @@ class PlaceDetailViewController: UIViewController {
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
-
+        
+        let contentBody = UIStackView()
+        contentBody.translatesAutoresizingMaskIntoConstraints = false
+ 
+        contentBody.axis = .vertical
         let topSection = UIView()
         topSection.translatesAutoresizingMaskIntoConstraints = false
         let attributes: [NSAttributedString.Key: Any] = [
@@ -215,13 +310,8 @@ class PlaceDetailViewController: UIViewController {
         
         
         // Constraints
-        scrollView.addSubview(topSection)
-        NSLayoutConstraint.activate([
-            topSection.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 40),
-            topSection.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -40),
-            topSection.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 50)
-        ])
-        
+        scrollView.addSubview(contentBody)
+        contentBody.addArrangedSubview(topSection)
         topSection.addSubview(nameLabel)
         topSection.addSubview(favButton)
         topSection.addSubview(contactStackView)
@@ -232,6 +322,102 @@ class PlaceDetailViewController: UIViewController {
         topSection.addSubview(ratingView)
         topSection.addSubview(detailedRatingView)
         
+        // REVIEWS
+        let reviewSection = UIStackView()
+        reviewSection.translatesAutoresizingMaskIntoConstraints = false
+        reviewSection.axis = .vertical
+        contentBody.addArrangedSubview(reviewSection)
+        
+        let reviewBody = UIStackView()
+        reviewBody.translatesAutoresizingMaskIntoConstraints = false
+        reviewBody.axis = .vertical
+        reviewBody.spacing = 10
+        reviewSection.addArrangedSubview(reviewBody)
+        
+        // Review title and add review button
+        let reviewTitleAndButton = UIStackView()
+        reviewTitleAndButton.translatesAutoresizingMaskIntoConstraints = false
+        reviewTitleAndButton.axis = .horizontal
+        reviewTitleAndButton.spacing = UIStackView.spacingUseSystem
+        reviewTitleAndButton.alignment = .bottom
+        reviewTitleAndButton.distribution = .equalSpacing
+        
+        let reviewTitle = UILabel()
+        reviewTitle.attributedText = NSAttributedString(string: "Reviews", attributes: lesserSpacing)
+        reviewTitle.translatesAutoresizingMaskIntoConstraints = false
+        reviewTitle.font = UIFont.systemFont(ofSize: 32, weight: .bold)
+        
+        let addReviewButton = UIButton()
+        let underlined: [NSAttributedString.Key: Any] = [
+            .underlineStyle: NSUnderlineStyle.single.rawValue
+        ]
+        addReviewButton.setAttributedTitle(NSAttributedString(string: "+ Add your own", attributes: underlined), for: .normal)
+        addReviewButton.translatesAutoresizingMaskIntoConstraints = false
+    
+        addReviewButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+        reviewTitleAndButton.addArrangedSubview(reviewTitle)
+        reviewTitleAndButton.addArrangedSubview(addReviewButton)
+        reviewBody.addArrangedSubview(reviewTitleAndButton)
+        
+        let numReviews = UILabel()
+        numReviews.attributedText = NSAttributedString(string: "\(reviews.count) reviews", attributes: lesserSpacing)
+        numReviews.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
+        numReviews.textColor = grayText
+        numReviews.translatesAutoresizingMaskIntoConstraints = false
+        reviewBody.addArrangedSubview(numReviews)
+        
+        let reviewDisplay = UIStackView()
+        reviewDisplay.axis = .vertical
+        reviewDisplay.translatesAutoresizingMaskIntoConstraints = false
+        reviewDisplay.spacing = 20
+        reviewBody.addArrangedSubview(reviewDisplay)
+        
+        // Show all reviews
+        var lastReview: UIView? = nil
+        var count = 0
+        for review in reviews {
+            let r = reviewItem(review: review)
+            reviewDisplay.addArrangedSubview(r)
+            NSLayoutConstraint.activate([
+                r.leadingAnchor.constraint(equalTo: reviewDisplay.leadingAnchor),
+                r.trailingAnchor.constraint(equalTo: reviewDisplay.trailingAnchor),
+            ])
+            if let lastReview = lastReview {
+                r.topAnchor.constraint(equalTo: lastReview.bottomAnchor, constant: 20).isActive = true
+            } else {
+                r.topAnchor.constraint(equalTo: reviewDisplay.topAnchor, constant: 10).isActive = true
+            }
+            
+            lastReview = r
+            
+            if count != reviews.count - 1 {
+                let separator = createSeparator()
+                NSLayoutConstraint.activate([
+                    separator.leadingAnchor.constraint(equalTo: r.leadingAnchor),
+                    separator.trailingAnchor.constraint(equalTo: r.trailingAnchor),
+                    separator.topAnchor.constraint(equalTo: r.bottomAnchor, constant: 10),
+                    separator.heightAnchor.constraint(equalToConstant: 2)
+                ])
+            }
+            count += 1
+        }
+        
+        // CONSTRAINTS
+        NSLayoutConstraint.activate([
+            contentBody.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentBody.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            contentBody.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentBody.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentBody.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+        ])
+
+        NSLayoutConstraint.activate([
+            topSection.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 40),
+            topSection.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -40),
+            topSection.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 50),
+        ])
+        
+        // Cafe Name Contraints
         NSLayoutConstraint.activate([
             nameLabel.topAnchor.constraint(equalTo: topSection.topAnchor),
             nameLabel.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
@@ -284,6 +470,41 @@ class PlaceDetailViewController: UIViewController {
             detailedContentView.leadingAnchor.constraint(equalTo: detailedRatingView.leadingAnchor, constant: 15),
             detailedContentView.topAnchor.constraint(equalTo: detailedRatingView.topAnchor, constant: 15),
             detailedContentView.trailingAnchor.constraint(equalTo: detailedRatingView.trailingAnchor, constant: -15),
+            
+            topSection.bottomAnchor.constraint(equalTo: detailedRatingView.bottomAnchor)
         ])
+
+        NSLayoutConstraint.activate([
+            reviewSection.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor),
+            reviewSection.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor),
+            reviewSection.topAnchor.constraint(equalTo: topSection.bottomAnchor)
+        ])
+        
+        NSLayoutConstraint.activate([
+            reviewBody.leadingAnchor.constraint(equalTo: reviewSection.leadingAnchor, constant: 40),
+            reviewBody.trailingAnchor.constraint(equalTo: reviewSection.trailingAnchor, constant: -40),
+            reviewBody.topAnchor.constraint(equalTo: reviewSection.topAnchor, constant: 35),
+        ])
+        
+        NSLayoutConstraint.activate([
+            reviewTitleAndButton.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
+            reviewTitleAndButton.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor)
+        ])
+        
+        NSLayoutConstraint.activate([
+            numReviews.topAnchor.constraint(equalTo: reviewTitleAndButton.bottomAnchor, constant: 20),
+            numReviews.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
+            numReviews.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor),
+        ])
+        
+        NSLayoutConstraint.activate([
+            reviewDisplay.topAnchor.constraint(equalTo: numReviews.bottomAnchor, constant: 5),
+            reviewDisplay.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
+            reviewDisplay.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor),
+        ])
+        
+        view.layoutIfNeeded()
+        print()
+        print("ScrollView content size: \(scrollView.contentSize)")
     }
 }
