@@ -11,6 +11,7 @@ class MenuViewController: UIViewController {
     
     let settingsSegueIdentifier = "SettingsSegue"
     let favoritesSegueIdentifier = "FavoritesSegue"
+    let friendsSegueIdentifier = "FriendsSegue"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,13 +23,15 @@ class MenuViewController: UIViewController {
         view.backgroundColor = background1Light
         let homeMenuButton = createMenuItem(title: "Home")
         let favoritesMenuButton = createMenuItem(title: "Favorites")
+        let friendsMenuButton = createMenuItem(title: "Friends")
         let settingsMenuButton = createMenuItem(title: "Settings")
         
         homeMenuButton.addTarget(self, action: #selector(homeButtonClicked), for: .touchUpInside)
         favoritesMenuButton.addTarget(self, action: #selector(favsButtonClicked), for: .touchUpInside)
         settingsMenuButton.addTarget(self, action: #selector(settingsButtonClicked), for: .touchUpInside)
+        friendsMenuButton.addTarget(self, action: #selector(friendsButtonClicked), for: .touchUpInside)
         
-        let buttons: [UIButton] = [homeMenuButton, favoritesMenuButton, settingsMenuButton]
+        let buttons: [UIButton] = [homeMenuButton, favoritesMenuButton, friendsMenuButton, settingsMenuButton]
         
         var lastButton: UIButton? = nil
         var count = 0
@@ -90,5 +93,9 @@ class MenuViewController: UIViewController {
     
     @objc func settingsButtonClicked() {
         performSegue(withIdentifier: settingsSegueIdentifier, sender: self)
+    }
+    
+    @objc func friendsButtonClicked() {
+        performSegue(withIdentifier: friendsSegueIdentifier, sender: self)
     }
 }
