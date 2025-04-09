@@ -7,7 +7,9 @@
 
 import UIKit
 import CoreData
+import FirebaseAuth
 import FirebaseCore
+import FirebaseFirestore
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,7 +18,44 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        FirebaseApp.configure()
+        
+        // Use dev firebase project for testing locally
+        if let filePath = Bundle.main.path(forResource: "GoogleService-Info-Dev", ofType: "plist"),
+               let options = FirebaseOptions(contentsOfFile: filePath) {
+                FirebaseApp.configure(options: options)
+            } else {
+                fatalError("Couldn't find GoogleService-Info-Dev.plist")
+            }
+        
+        
+        #if EMULATORS
+            print(
+                """
+                ***************************************
+                Testing on Emulators
+                ***************************************
+                """
+            )
+            // Connect to Authentication emulator
+            Auth.auth().useEmulator(withHost:"127.0.0.1", port:9099)
+            // Connect to Firestore emulator
+            let settings = Firestore.firestore().settings
+            settings.host = "127.0.0.1:8080"
+            settings.cacheSettings = MemoryCacheSettings()
+            settings.isSSLEnabled = false
+            Firestore.firestore().settings = settings
+        #elseif DEBUG
+            print(
+                """
+                ***************************************
+                Testing on Live Server
+                ***************************************
+                """
+            )
+        #endif
+        
+        
+       
         return true
     }
     
