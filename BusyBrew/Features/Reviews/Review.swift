@@ -22,16 +22,20 @@ struct Review: Codable, Identifiable {
     
     var uid: String // uid of user who created review
     var date: String
+    var text: String
     var wifi: Int
     var cleanliness: Int
     var outlets: Int
+    var photos: [String]
         
-    init(uid: String, date: String, wifi: Int, cleanliness: Int, outlets: Int) {
+    init(uid: String, date: String, text: String, wifi: Int, cleanliness: Int, outlets: Int, photos: [String]) {
         self.uid = uid
         self.date = date
+        self.text = text
         self.wifi = wifi
         self.cleanliness = cleanliness
         self.outlets = outlets
+        self.photos = photos
     }
 }
 
@@ -42,9 +46,11 @@ extension Review {
             Review(
                  uid: uid,
                  date: "",
+                 text: "",
                  wifi: 0,
                  cleanliness: 0,
-                 outlets: 0
+                 outlets: 0,
+                 photos: []
             )
     }
 }
