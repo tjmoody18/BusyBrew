@@ -90,13 +90,115 @@ class PlaceDetailViewController: UIViewController {
     init(place: PlaceAnnotation) {
         self.place = place
         super.init(nibName: nil, bundle: nil)
-        setupUI()
+//        setupUI()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        
+        let name = place.name
+        let coordinate = place.location.coordinate
+        fetchPlaceIDFromGoogle(name: name, latitude: coordinate.latitude, longitude: coordinate.longitude) { placeID in
+            if let placeID = placeID {
+                self.fetchPlaceDetails(placeID: placeID) { details in
+                    if let details = details {
+                        DispatchQueue.main.async {
+                            print("api details: \(details)")
+                            if let address = details["formatted_address"] as? String {
+                                self.addressLabel.text = address
+                            }
+                            if let rating = details["rating"] as? Double {
+                                self.overallRating.text = String(format: "%.1f", rating)
+                            }
+                            if let newName = details["name"] as? String {
+                                self.nameLabel.text = newName
+                            }
+                            
+                            self.setupUI()
+
+                            if let photos = details["photos"] as? [[String: Any]],
+                               let photoRef = photos.first?["photo_reference"] as? String {
+                                
+                                let maxWidth = 400
+                                let photoURLStr = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=\(maxWidth)&photoreference=\(photoRef)&key=AIzaSyCboeBjmEs9hC45LBdQse8s67u2lByWsn0"
+
+                                if let photoURL = URL(string: photoURLStr) {
+                                    URLSession.shared.dataTask(with: photoURL) { data, response, error in
+                                        if let data = data, let image = UIImage(data: data) {
+                                            DispatchQueue.main.async {
+                                                self.cafeImage.image = image
+                                            }
+                                        }
+                                    }.resume()
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                print("no placeID found")
+                DispatchQueue.main.async {
+                    self.setupUI() // fallback setup even if API fails
+                }
+            }
+        }
     }
+    
+    func fetchPlaceIDFromGoogle(name: String, latitude: Double, longitude: Double, completion: @escaping (String?) -> Void) {
+        let apiKey = "AIzaSyCboeBjmEs9hC45LBdQse8s67u2lByWsn0"
+        
+        let query = "\(name)"
+        let location = "\(latitude),\(longitude)"
+        let radius = 100  // meters
+
+        let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let urlStr = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=\(encodedQuery)&location=\(location)&radius=\(radius)&key=\(apiKey)"
+        print("api query: \(encodedQuery) @ \(location)")
+
+        if let url = URL(string: urlStr) {
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let data = data,
+                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let results = json["results"] as? [[String: Any]],
+                   let first = results.first,
+                   let placeID = first["place_id"] as? String {
+                    completion(placeID)
+                    print("Found placeID: \(placeID)")
+
+                } else {
+                    print("placeID not found.")
+                    if let data = data {
+                        print(String(data: data, encoding: .utf8) ?? "Could not stringify data")
+                    }
+                    completion(nil)
+                }
+            }.resume()
+        } else {
+            completion(nil)
+        }
+    }
+    
+    func fetchPlaceDetails(placeID: String, completion: @escaping ([String: Any]?) -> Void) {
+        let apiKey = "AIzaSyCboeBjmEs9hC45LBdQse8s67u2lByWsn0"
+        let fields = "name,formatted_address,rating,opening_hours,photos"
+        let urlStr = "https://maps.googleapis.com/maps/api/place/details/json?place_id=\(placeID)&fields=\(fields)&key=\(apiKey)"
+
+        if let url = URL(string: urlStr) {
+            URLSession.shared.dataTask(with: url) { data, response, error in
+                if let data = data,
+                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let result = json["result"] as? [String: Any] {
+                    completion(result)
+                } else {
+                    completion(nil)
+                }
+            }.resume()
+        } else {
+            completion(nil)
+        }
+    }
+
     
     required init?(coder: NSCoder) {
         fatalError("init(coder has not been implemented")
@@ -225,8 +327,8 @@ class PlaceDetailViewController: UIViewController {
         let lesserSpacing: [NSAttributedString.Key: Any] = [
             .kern: -1.0  // reduce the letter spacing
         ]
-        nameLabel.attributedText = NSAttributedString(string: place.name, attributes: attributes)
-        addressLabel.text = place.address
+//        nameLabel.attributedText = NSAttributedString(string: place.name, attributes: attributes)
+//        addressLabel.text = place.address
         
         let contactStackView = UIStackView()
         contactStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -440,8 +542,10 @@ class PlaceDetailViewController: UIViewController {
         NSLayoutConstraint.activate([
             cafeImage.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
             cafeImage.trailingAnchor.constraint(equalTo: topSection.trailingAnchor),
-            cafeImage.topAnchor.constraint(equalTo: contactStackView.bottomAnchor, constant: 10)
+            cafeImage.topAnchor.constraint(equalTo: contactStackView.bottomAnchor, constant: 10),
+//            cafeImage.heightAnchor.constraint(equalToConstant: 15)
         ])
+
         
         NSLayoutConstraint.activate([
             statusLabel.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
