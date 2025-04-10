@@ -24,7 +24,10 @@ class FriendsViewController: UIViewController {
         Friend(uid: "uid002", name: "Bob Smith"),
         Friend(uid: "uid003", name: "Charlie Brown"),
         Friend(uid: "uid004", name: "Diana Prince"),
-        Friend(uid: "uid005", name: "Ethan Hunt")
+        Friend(uid: "uid005", name: "Ethan Hunt"),
+        Friend(uid: "uid002", name: "Bob Smith"),
+        Friend(uid: "uid003", name: "Charlie Brown"),
+        Friend(uid: "uid004", name: "Diana Prince"),
     ]
     
     let backButton = UIButton(type: .system)
@@ -39,7 +42,7 @@ class FriendsViewController: UIViewController {
     
     func setupUI() {
         view.backgroundColor = background3
-        createBackButton()
+        let backButton = createBackButton()
         
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -49,7 +52,8 @@ class FriendsViewController: UIViewController {
         let contentBody = UIStackView()
         contentBody.translatesAutoresizingMaskIntoConstraints = false
         contentBody.axis = .vertical
-        contentBody.spacing = 10
+        contentBody.alignment = .leading
+        contentBody.spacing = 5
         
         let title = UILabel()
         title.translatesAutoresizingMaskIntoConstraints = false
@@ -64,45 +68,17 @@ class FriendsViewController: UIViewController {
         
         view.addSubview(scrollView)
         scrollView.addSubview(contentBody)
+        contentBody.addArrangedSubview(backButton)
         contentBody.addArrangedSubview(title)
         contentBody.addArrangedSubview(friendsStack)
-//        contentBody.backgroundColor = .red
-//        friendsStack.backgroundColor = .blue
-//        scrollView.backgroundColor = .yellow
-        
-        var lastFriend: UIStackView? = nil
-        var count = 0
+
         for friend in dummyFriends {
             let friendItem = createFriendItem(friend: friend)
             friendsStack.addArrangedSubview(friendItem)
-            NSLayoutConstraint.activate([
-                friendItem.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor),
-                friendItem.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor),
-                friendItem.widthAnchor.constraint(equalTo: contentBody.widthAnchor)
-            ])
-            
-            if let lastFriend = lastFriend {
-                friendItem.topAnchor.constraint(equalTo: lastFriend.bottomAnchor, constant: 20).isActive = true
-            } else {
-                friendItem.topAnchor.constraint(equalTo: friendsStack.topAnchor, constant: 10).isActive = true
-            }
-            
-            lastFriend = friendItem
-            
-            if count != dummyFriends.count - 1 {
-                let separator = createSeparator()
-                NSLayoutConstraint.activate([
-                    separator.leadingAnchor.constraint(equalTo: friendItem.leadingAnchor),
-                    separator.trailingAnchor.constraint(equalTo: friendItem.trailingAnchor),
-                    separator.topAnchor.constraint(equalTo: friendItem.bottomAnchor, constant: 10),
-                    separator.heightAnchor.constraint(equalToConstant: 2)
-                ])
-            }
-            count += 1
         }
         
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: backButton.bottomAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
@@ -113,26 +89,15 @@ class FriendsViewController: UIViewController {
             contentBody.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentBody.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 40),
             contentBody.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -40),
-            contentBody.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+            contentBody.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -80)
         ])
-        
-//        NSLayoutConstraint.activate([
-//            title.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor),
-//            title.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor),
-//            title.topAnchor.constraint(equalTo: contentBody.topAnchor)
-//        ])
-//        
-//        NSLayoutConstraint.activate([
-//            friendsStack.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor),
-//            friendsStack.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor),
-//        ])
         
         view.layoutIfNeeded()
         print()
         print("ScrollView content size: \(scrollView.contentSize)")
     }
     
-    func createBackButton() {
+    func createBackButton() -> UIButton {
         backButton.setTitle("Back", for: .normal)
         backButton.setTitleColor(.black, for: .normal)
         backButton.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
@@ -141,12 +106,8 @@ class FriendsViewController: UIViewController {
         ]
         backButton.titleLabel?.attributedText = NSAttributedString(string: backButton.titleLabel?.text ?? "", attributes: attributes)
         backButton.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
-        self.view.addSubview(backButton)
-        NSLayoutConstraint.activate([
-            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
-            backButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 100)
-        ])
         backButton.translatesAutoresizingMaskIntoConstraints = false
+        return backButton
     }
     
     func createFriendItem(friend: Friend) -> UIStackView {
@@ -161,9 +122,9 @@ class FriendsViewController: UIViewController {
         profileImageView.image = UIImage(named: "cafe.png")
         profileImageView.contentMode = .scaleToFill
         profileImageView.clipsToBounds = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 60).isActive = true
-        profileImageView.heightAnchor.constraint(equalToConstant: 60).isActive = true
-        profileImageView.layer.cornerRadius = 60 / 2
+        profileImageView.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        profileImageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        profileImageView.layer.cornerRadius = 50 / 2
         
         let name = UILabel()
         name.translatesAutoresizingMaskIntoConstraints = false
@@ -180,7 +141,6 @@ class FriendsViewController: UIViewController {
         separator.layer.cornerRadius = 1
         separator.layer.masksToBounds = true
         separator.translatesAutoresizingMaskIntoConstraints = false
-        self.view.addSubview(separator)
         return separator
     }
     
