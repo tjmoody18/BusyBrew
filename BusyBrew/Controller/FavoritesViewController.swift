@@ -7,24 +7,48 @@
 
 import UIKit
 
-class FavoritesViewController: UIViewController {
-
+class FavoritesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource{
+    
+    var favorites: [Cafe]?
+    
     let backButton = UIButton(type: .system)
+    let favoritesTable = UITableView()
+    let favoritesLabel = UILabel()
+    let subtitleLabel = UILabel()
+    let favoriteCellIdentifier = "FavoriteTableViewCell"
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        getFavorites()
         setupUI()
+        favoritesTable.dataSource = self
+        favoritesTable.delegate = self
     }
     
     func setupUI() {
+        
         view.backgroundColor = background3
         createBackButton()
         addHeaders()
+        setupTable()
+        favoritesTable.reloadData()
+    }
+    
+    func setupTable() {
+        favoritesTable.dataSource = self
+        favoritesTable.delegate = self
+        view.addSubview(favoritesTable)
+        
+        NSLayoutConstraint.activate([
+            favoritesTable.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 8),
+            favoritesTable.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            favoritesTable.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            favoritesTable.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
     }
     
     func addHeaders() {
         // Create and add "Favorites" Label
-        let favoritesLabel = UILabel()
         favoritesLabel.text = "Favorites"
         favoritesLabel.font = UIFont.systemFont(ofSize: 42, weight: .bold)
         favoritesLabel.textColor = UIColor(red: 88/255, green: 136/255, blue: 59/255, alpha: 1) // Custom green
@@ -32,7 +56,6 @@ class FavoritesViewController: UIViewController {
         view.addSubview(favoritesLabel)
         
         // Create and add Subheader Label
-        let subtitleLabel = UILabel()
         subtitleLabel.text = "All your favs in one spot."
         subtitleLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         subtitleLabel.textColor = UIColor.black.withAlphaComponent(0.7)
@@ -73,5 +96,31 @@ class FavoritesViewController: UIViewController {
     
     @objc func backButtonTapped() {
         self.dismiss(animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return favorites!.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = favoritesTable.dequeueReusableCell(withIdentifier: favoriteCellIdentifier, for: indexPath as IndexPath) as? FavoriteTableViewCell
+        let cafeFavorite = favorites![indexPath.row]
+//        cell?.cafeImage = cafeFavorite.
+        cell?.nameLabel.text = cafeFavorite.name
+        cell?.statusLabel.text = cafeFavorite.status
+        return cell!
+    }
+    
+    func getFavorites() {
+        Task {
+            if let user = await UserManager().fetchUserDocument() {
+                self.favorites = user.favorites
+                print("User found: \(user)")
+            } else {
+                print("Failed to fetch user data")
+            }
+        }
+        print("here")
+        print(self.favorites)
     }
 }

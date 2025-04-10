@@ -24,12 +24,14 @@ struct Cafe: Codable, Identifiable {
     var name: String
     var reviews: [Review]
     var status: String
+    var image: String
         
-    init(uid: String, name: String, reviews: [Review], status: String) {
+    init(uid: String, name: String, reviews: [Review], status: String, image: String) {
         self.uid = uid
         self.name = name
         self.reviews = reviews
         self.status = status
+        self.image = image
     }
     
     var dictionary: [String: Any] {
@@ -37,7 +39,8 @@ struct Cafe: Codable, Identifiable {
             "uid": uid,
             "name": name,
             "reviews": reviews,
-            "status": status
+            "status": status,
+            "image": image
         ]
     }
 }
@@ -51,7 +54,8 @@ extension Cafe {
                  uid: uid,
                  name: name,
                  reviews: [],
-                 status: "No Status Reported"
+                 status: "No Status Reported",
+                 image: "cafe.png"
             )
     }
 }

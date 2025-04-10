@@ -9,11 +9,13 @@ import Foundation
 import UIKit
 
 class PlaceDetailViewController: UIViewController {
+    var user: User?
+    var isFavorite: Bool = false
+    var cafe: Cafe?
     let place: PlaceAnnotation
     let currentStatus = "MODERATELY BUSY"
     let rating = 5.0
     let categories = ["wifi quality", "cleanliness", "outlets availability"]
-    
     let reviews = [
         Review(uid: "Jim", date: "2/28/2025", text: "I really enjoyed this shop", wifi: 5, cleanliness: 5, outlets: 5, photos: []),
         Review(uid: "Tommy", date: "2/2/2025", text: "I really enjoyed this shop", wifi: 5, cleanliness: 5, outlets: 3, photos: ["cafe.png", "cafe.png"]),
@@ -31,7 +33,10 @@ class PlaceDetailViewController: UIViewController {
     
     lazy var favButton: UIButton = {
         let button = UIButton(type: .custom)
-        button.backgroundColor = .red
+        let heartImage = UIImage(systemName: "heart")
+        button.setImage(heartImage, for: .normal)
+        button.tintColor = .systemRed
+//        button.backgroundColor = .red
         button.translatesAutoresizingMaskIntoConstraints = false
         button.layer.cornerRadius = 4
         return button
@@ -61,7 +66,7 @@ class PlaceDetailViewController: UIViewController {
     
     lazy var cafeImage: UIImageView = {
         let cafeImage = UIImageView()
-        cafeImage.image = UIImage(named: "cafe.png")
+        cafeImage.image = UIImage(named: cafe!.image)
         cafeImage.contentMode = .scaleAspectFill
         cafeImage.translatesAutoresizingMaskIntoConstraints = false
         return cafeImage
@@ -87,19 +92,51 @@ class PlaceDetailViewController: UIViewController {
         return label
     }()
     
+    
+    
     init(place: PlaceAnnotation) {
         self.place = place
         super.init(nibName: nil, bundle: nil)
         setupUI()
     }
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
+        Task {
+            if let user = await UserManager().fetchUserDocument() {
+                self.user = user
+                print("User found: \(user)")
+            } else {
+                print("Failed to fetch user data")
+            }
+            
+            if let cafe = await CafeManager().fetchCafeDocument(uid: "temp") {
+                self.cafe = cafe
+                print("Cafe found: \(cafe)")
+            } else {
+                print("Failed to fetch cafe data")
+            }
+        }
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder has not been implemented")
+    }
+    
+    @objc func favButtonTapped(_ sender: UIButton) {
+        isFavorite = !isFavorite
+        let heartImg = isFavorite ? UIImage(systemName: "heart.fill") : UIImage(systemName: "heart")
+        favButton.setImage(heartImg, for: .normal)
+        
+//        add this cafe to the 
+        if isFavorite {
+            
+        }
+        else {
+            
+        }
     }
     
     // Open Apple Maps when pressed
@@ -111,6 +148,8 @@ class PlaceDetailViewController: UIViewController {
         }
         UIApplication.shared.open(url)
     }
+    
+    
     
     func reviewItem(review: Review) -> UIView {
         let reviewItem = UIView()
