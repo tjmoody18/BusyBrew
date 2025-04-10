@@ -15,7 +15,7 @@ struct User: Codable, Identifiable {
     var email: String
     var displayName: String
     var photoURL: String
-    var favorites: [String] = []
+    var favorites: [Cafe] = []
     var friends: [String] = []
     
     init(uid: String, email: String, displayName: String, photoURL: String, favorites: [String], friends: [String]) {

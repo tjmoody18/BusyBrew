@@ -30,7 +30,7 @@ class UserManager {
     }
     
     func updateDocument(uid: String, data: [String: Any]) {
-        db.collection("uesrs").document(uid).updateData(data)
+        db.collection("users").document(uid).updateData(data)
     }
     
     func fetchUserDocument() async -> User? {
