@@ -96,6 +96,9 @@ class MenuViewController: UIViewController {
     }
     
     @objc func friendsButtonClicked() {
-        performSegue(withIdentifier: friendsSegueIdentifier, sender: self)
+        let friendsVC = FriendsViewController()
+        friendsVC.modalPresentationStyle = .fullScreen  
+        present(friendsVC, animated: true)
     }
+
 }

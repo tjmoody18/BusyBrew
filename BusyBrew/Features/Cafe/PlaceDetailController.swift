@@ -66,7 +66,7 @@ class PlaceDetailViewController: UIViewController {
     
     lazy var cafeImage: UIImageView = {
         let cafeImage = UIImageView()
-        cafeImage.image = UIImage(named: cafe!.image)
+//        cafeImage.image = UIImage(named: cafe!.image)
         cafeImage.contentMode = .scaleAspectFill
         cafeImage.translatesAutoresizingMaskIntoConstraints = false
         return cafeImage
@@ -128,7 +128,7 @@ class PlaceDetailViewController: UIViewController {
                             if let photos = details["photos"] as? [[String: Any]],
                                let photoRef = photos.first?["photo_reference"] as? String {
                                 
-                                let maxWidth = 400
+                                let maxWidth = 200
                                 let photoURLStr = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=\(maxWidth)&photoreference=\(photoRef)&key=AIzaSyCboeBjmEs9hC45LBdQse8s67u2lByWsn0"
 
                                 if let photoURL = URL(string: photoURLStr) {
