@@ -36,4 +36,12 @@ class PlaceAnnotation: MKPointAnnotation {
     var location: CLLocation {
         mapItem.placemark.location ?? CLLocation.default
     }
+    
+    var placeId: String {
+        let name = self.name.replacingOccurrences(of: " ", with: "+")
+        let lat = self.location.coordinate.latitude
+        let long = self.location.coordinate.longitude
+        return "\(name)-\(lat)-\(long)"
+        
+    }
 }
