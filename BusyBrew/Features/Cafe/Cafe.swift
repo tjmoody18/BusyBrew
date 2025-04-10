@@ -22,14 +22,14 @@ struct Cafe: Codable, Identifiable {
     
     var uid: String // uid will store name-lat-lon
     var name: String
-    var reviews: [Review]
+//    var reviews: [Review]
     var status: String
     var image: String
         
-    init(uid: String, name: String, reviews: [Review], status: String, image: String) {
+    init(uid: String, name: String, status: String, image: String) {
         self.uid = uid
         self.name = name
-        self.reviews = reviews
+//        self.reviews = reviews
         self.status = status
         self.image = image
     }
@@ -38,7 +38,7 @@ struct Cafe: Codable, Identifiable {
         return [
             "uid": uid,
             "name": name,
-            "reviews": reviews,
+//            "reviews": reviews,
             "status": status,
             "image": image
         ]
@@ -53,7 +53,7 @@ extension Cafe {
             Cafe(
                  uid: uid,
                  name: name,
-                 reviews: [],
+//                 reviews: [],
                  status: "No Status Reported",
                  image: "cafe.png"
             )

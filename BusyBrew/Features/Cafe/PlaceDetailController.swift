@@ -21,6 +21,8 @@ class PlaceDetailViewController: UIViewController {
         Review(uid: "Tommy", date: "2/2/2025", text: "I really enjoyed this shop", wifi: 5, cleanliness: 5, outlets: 3, photos: ["cafe.png", "cafe.png"]),
     ]
     
+   
+    
     lazy var nameLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 1
@@ -46,9 +48,10 @@ class PlaceDetailViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .left
-        label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        label.font = UIFont.systemFont(ofSize: 12, weight: .regular)
         label.alpha = 0.4
         label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     
@@ -66,6 +69,7 @@ class PlaceDetailViewController: UIViewController {
     
     lazy var cafeImage: UIImageView = {
         let cafeImage = UIImageView()
+        cafeImage.contentMode = .scaleToFill
         cafeImage.contentMode = .scaleAspectFill
         cafeImage.translatesAutoresizingMaskIntoConstraints = false
         return cafeImage
@@ -212,12 +216,20 @@ class PlaceDetailViewController: UIViewController {
                 print("Failed to fetch user data")
             }
             
-            if let cafe = await CafeManager().fetchCafeDocument(uid: "temp") {
+            if let cafe = await CafeManager().fetchCafeDocument(uid: place.placeId) {
                 self.cafe = cafe
                 print("Cafe found: \(cafe)")
             } else {
                 print("Failed to fetch cafe data")
+                print("Creating document")
+                let newCafe = Cafe.empty(uid: place.placeId, name: place.name)
+                CafeManager().createCafeDocument(cafe: newCafe)
             }
+            
+            for review in reviews {
+                ReviewManager().createReviewDocument(forCafeId: place.placeId, review: review)
+            }
+            
         }
     }
 
@@ -371,9 +383,10 @@ class PlaceDetailViewController: UIViewController {
         let contactStackView = UIStackView()
         contactStackView.translatesAutoresizingMaskIntoConstraints = false
         contactStackView.axis = .horizontal
-        contactStackView.spacing = UIStackView.spacingUseSystem
+        contactStackView.spacing = 100
+        contactStackView.alignment = .bottom
         
-        contactStackView.addArrangedSubview(addressLabel)
+        // contactStackView.addArrangedSubview(addressLabel)
         contactStackView.addArrangedSubview(directionsButton)
         
         directionsButton.addTarget(self, action: #selector(directionsButtonTapped), for: .touchUpInside)
@@ -448,7 +461,6 @@ class PlaceDetailViewController: UIViewController {
             
         }
         
-        
         // Constraints
         scrollView.addSubview(contentBody)
         contentBody.addArrangedSubview(topSection)
@@ -461,6 +473,9 @@ class PlaceDetailViewController: UIViewController {
         topSection.addSubview(reportStatusButton)
         topSection.addSubview(ratingView)
         topSection.addSubview(detailedRatingView)
+        
+        cafeImage.heightAnchor.constraint(equalToConstant: 150).isActive = true
+        cafeImage.widthAnchor.constraint(equalTo: topSection.widthAnchor).isActive = true
         
         // REVIEWS
         let reviewSection = UIStackView()

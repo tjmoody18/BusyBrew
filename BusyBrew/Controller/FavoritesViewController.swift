@@ -1,3 +1,5 @@
+
+
 //
 //  FavoritesViewController.swift
 //  BusyBrew
@@ -9,38 +11,42 @@ import UIKit
 
 class FavoritesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource{
     
-    var favorites: [Cafe]?
+    var favorites: [Cafe] = [Cafe.empty(uid: "123", name: "g123456@gmail.com")]
     
     let backButton = UIButton(type: .system)
     let favoritesTable = UITableView()
     let favoritesLabel = UILabel()
     let subtitleLabel = UILabel()
-    let favoriteCellIdentifier = "FavoriteTableViewCell"
+    let favoriteCellIdentifier = "FavoriteTableViewCellIdentifier"
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        getFavorites()
+        favoritesTable.register(FavoriteTableViewCell.self, forCellReuseIdentifier: favoriteCellIdentifier)
         setupUI()
         favoritesTable.dataSource = self
         favoritesTable.delegate = self
     }
     
     func setupUI() {
-        
         view.backgroundColor = background3
         createBackButton()
         addHeaders()
+//        favoritesTable.reloadData()
         setupTable()
-        favoritesTable.reloadData()
+//        favoritesTable.reloadData()
     }
     
     func setupTable() {
         favoritesTable.dataSource = self
         favoritesTable.delegate = self
+        favoritesTable.translatesAutoresizingMaskIntoConstraints = false
+        favoritesTable.backgroundColor = background3
+        favoritesTable.estimatedRowHeight = 100
+        favoritesTable.rowHeight = UITableView.automaticDimension
         view.addSubview(favoritesTable)
         
         NSLayoutConstraint.activate([
-            favoritesTable.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 8),
+            favoritesTable.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 25),
             favoritesTable.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             favoritesTable.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             favoritesTable.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -63,15 +69,12 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
         view.addSubview(subtitleLabel)
         
         NSLayoutConstraint.activate([
-            // Back Button Constraints
-            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             
-            // Header Constraints
             favoritesLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             favoritesLabel.topAnchor.constraint(equalTo: backButton.bottomAnchor, constant: 5),
             
-            // Subheader constraints
             subtitleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             subtitleLabel.topAnchor.constraint(equalTo: favoritesLabel.bottomAnchor, constant: 5)
         ])
@@ -87,10 +90,6 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
         backButton.titleLabel?.attributedText = NSAttributedString(string: backButton.titleLabel?.text ?? "", attributes: attributes)
         backButton.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
         self.view.addSubview(backButton)
-        NSLayoutConstraint.activate([
-            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
-            backButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 100)
-        ])
         backButton.translatesAutoresizingMaskIntoConstraints = false
     }
     
@@ -99,28 +98,27 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return favorites!.count
+        return favorites.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = favoritesTable.dequeueReusableCell(withIdentifier: favoriteCellIdentifier, for: indexPath as IndexPath) as? FavoriteTableViewCell
-        let cafeFavorite = favorites![indexPath.row]
-//        cell?.cafeImage = cafeFavorite.
+        let cafeFavorite = favorites[indexPath.row]
+        cell?.cafeImage.image = UIImage(named: cafeFavorite.image)
         cell?.nameLabel.text = cafeFavorite.name
         cell?.statusLabel.text = cafeFavorite.status
         return cell!
     }
     
-    func getFavorites() {
-        Task {
-            if let user = await UserManager().fetchUserDocument() {
-                self.favorites = user.favorites
-                print("User found: \(user)")
-            } else {
-                print("Failed to fetch user data")
-            }
-        }
-        print("here")
-        print(self.favorites)
-    }
+//    func getFavorites() {
+//        Task {
+//            if let user = await UserManager().fetchUserDocument() {
+//                self.favorites = user.favorites
+//                print("User found: \(user)")
+//            } else {
+//                print("Failed to fetch user data")
+//            }
+//        }
+//        favoritesTable.reloadData()
+//    }
 }
