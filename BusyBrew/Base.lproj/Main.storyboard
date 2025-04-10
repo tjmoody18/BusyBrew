@@ -125,6 +125,7 @@
                     <connections>
                         <segue destination="WUn-TF-WvS" kind="presentation" identifier="SettingsSegue" modalPresentationStyle="fullScreen" id="2dx-KJ-iqy"/>
                         <segue destination="mKV-ht-vWw" kind="presentation" identifier="FavoritesSegue" modalPresentationStyle="fullScreen" id="kV9-lj-z2w"/>
+                        <segue destination="JY3-TY-1sz" kind="presentation" identifier="FriendsSegue" modalPresentationStyle="fullScreen" id="PdY-uI-Sv6"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jhd-4h-q1R" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -175,6 +176,21 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="wZB-Ii-d5D" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="5085" y="-491"/>
+        </scene>
+        <!--Friends View Controller-->
+        <scene sceneID="FBE-Up-7M1">
+            <objects>
+                <viewController id="JY3-TY-1sz" customClass="FriendsViewController" customModule="BusyBrew" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="wuj-JD-4yQ">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="PD9-6C-Fnm"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="sNT-P4-CJx" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4143" y="-829"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>

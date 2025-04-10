@@ -66,7 +66,6 @@ class PlaceDetailViewController: UIViewController {
     
     lazy var cafeImage: UIImageView = {
         let cafeImage = UIImageView()
-//        cafeImage.image = UIImage(named: cafe!.image)
         cafeImage.contentMode = .scaleAspectFill
         cafeImage.translatesAutoresizingMaskIntoConstraints = false
         return cafeImage
