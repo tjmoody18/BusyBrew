@@ -262,6 +262,11 @@ class PlaceDetailViewController: UIViewController {
         UIApplication.shared.open(url)
     }
     
+    @objc func addReviewButtonTapped(_ sender: UIButton) {
+        let reviewVC = ShopReviewViewController()
+        present(reviewVC, animated: true)
+    }
+    
     
     
     func reviewItem(review: Review) -> UIView {
@@ -510,6 +515,10 @@ class PlaceDetailViewController: UIViewController {
         addReviewButton.translatesAutoresizingMaskIntoConstraints = false
     
         addReviewButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+        
+        // Review button tapped event handler
+        addReviewButton.addTarget(self, action: #selector(addReviewButtonTapped), for: .touchUpInside)
+        
         reviewTitleAndButton.addArrangedSubview(reviewTitle)
         reviewTitleAndButton.addArrangedSubview(addReviewButton)
         reviewBody.addArrangedSubview(reviewTitleAndButton)
