@@ -1,25 +1,28 @@
-//  FriendsViewController.swift
+//
+//  AddFriendsViewController.swift
 //  BusyBrew
+//
+//  Created by Donald Thai on 4/21/25.
+//
+
 import UIKit
 import Firebase
 import FirebaseAuth
 
-class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class AddFriendsViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     struct Friend {
         let uid: String
         let name: String
         let email: String
     }
-
-    var friendsList: [Friend] = []
-    var friendsStack = UIStackView()
     let db = Firestore.firestore()
     let currentUserEmail = Auth.auth().currentUser?.email ?? ""
     let currentUserUID = Auth.auth().currentUser?.uid ?? ""
     let tightSpacing: [NSAttributedString.Key: Any] = [.kern: -2.0]
-    let emailField = UITextField()
+    let addFriendField = UITextField()
     let friendsTable = UITableView()
     let friendsCellIdentifier = "FriendsTableViewCellIdentifier"
+    var friendsList: [Friend] = [Friend(uid: "john", name: "jgon", email: "dohn@gmail.com"), Friend(uid: "123", name: "monkey", email: "m@gmail.com")]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,14 +30,9 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         friendsTable.delegate = self
         friendsTable.register(FriendsTableViewCell.self, forCellReuseIdentifier: friendsCellIdentifier)
         setupUI()
-        fetchFriends()
+        // Do any additional setup after loading the view.
     }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        fetchFriends()
-    }
-
+    
     func setupUI() {
         view.backgroundColor = background3
 
@@ -50,15 +48,27 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
 
         let title = UILabel()
         title.translatesAutoresizingMaskIntoConstraints = false
-        title.attributedText = NSAttributedString(string: "Friends", attributes: tightSpacing)
+        title.attributedText = NSAttributedString(string: "Add Friends", attributes: tightSpacing)
         title.font = UIFont.systemFont(ofSize: 48, weight: .bold)
         title.textColor = background1
 
+        let addStack = UIStackView()
+        addStack.axis = .horizontal
+        addStack.translatesAutoresizingMaskIntoConstraints = false
+        addStack.spacing = 5
+        addStack.alignment = .center
+        addStack.distribution = .fillProportionally
+        
+        addFriendField.translatesAutoresizingMaskIntoConstraints = false
+        addFriendField.placeholder = "Enter name"
+        addFriendField.borderStyle = .roundedRect
+        addFriendField.font = .systemFont(ofSize: 14, weight: .regular)
+        
         let addButton = UIButton(type: .system)
         var config = UIButton.Configuration.filled()
-        config.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10)
+        config.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)
         config.baseBackgroundColor = background1
-        var buttonTitle = AttributedString("+ Add Friends")
+        var buttonTitle = AttributedString("Add")
         buttonTitle.font = .systemFont(ofSize: 14, weight: .semibold)
         config.attributedTitle = buttonTitle
         addButton.configuration = config
@@ -69,10 +79,13 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         friendsTable.backgroundColor = background3
         friendsTable.estimatedRowHeight = 100
         friendsTable.rowHeight = UITableView.automaticDimension
-
+        
+        addStack.addArrangedSubview(addFriendField)
+        addStack.addArrangedSubview(addButton)
+        
         contentBody.addArrangedSubview(backButton)
         contentBody.addArrangedSubview(title)
-        contentBody.addArrangedSubview(addButton)
+        contentBody.addArrangedSubview(addStack)
         contentBody.addArrangedSubview(friendsTable)
 
         NSLayoutConstraint.activate([
@@ -81,77 +94,60 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
             contentBody.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
             contentBody.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
             contentBody.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -80),
-        
+            addStack.widthAnchor.constraint(equalTo: contentBody.widthAnchor),
+            addButton.widthAnchor.constraint(equalToConstant: 50),
+            addButton.heightAnchor.constraint(equalTo: addFriendField.heightAnchor),
             friendsTable.topAnchor.constraint(equalTo: addButton.bottomAnchor, constant: 10),
             friendsTable.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor),
             friendsTable.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor),
         ])
     }
-
+    
     @objc func addFriendTapped() {
-        let addVC = AddFriendsViewController()
-        addVC.modalPresentationStyle = .fullScreen
-        present(addVC, animated: true)
-    }
+        let email = addFriendField.text ?? ""
+        if email.isEmpty || currentUserUID.isEmpty {
+            showAlert(title: "Error", message: "Please enter a valid email.")
+            return
+        }
 
-    func fetchFriends() {
-        db.collection("users").document(currentUserUID).getDocument { document, error in
-            if let document = document, document.exists,
-               let friendUIDs = document.data()?["friends"] as? [String] {
-                var fetchedFriends: [Friend] = []
-                let group = DispatchGroup()
+        if email == currentUserEmail {
+            showAlert(title: "Invalid", message: "You cannot add yourself as a friend.")
+            return
+        }
 
-                for uid in friendUIDs {
-                    group.enter()
-                    self.db.collection("users").document(uid).getDocument { friendDoc, _ in
-                        if let friendDoc = friendDoc, friendDoc.exists {
-                            let name = friendDoc.data()? ["displayName"] as? String ?? "Unknown"
-                            let email = friendDoc.data()? ["email"] as? String ?? ""
-                            fetchedFriends.append(Friend(uid: uid, name: name, email: email))
-                        }
-                        group.leave()
-                    }
+        if friendsList.contains(where: { $0.email == email }) {
+            showAlert(title: "Already Friends", message: "You already added this friend.")
+            return
+        }
+
+        db.collection("users").whereField("email", isEqualTo: email).getDocuments { snapshot, error in
+            if let snapshot = snapshot, let doc = snapshot.documents.first {
+                let friendUID = doc.documentID
+                let friendName = doc.data()["displayName"] as? String ?? "Unknown"
+                let friendEmail = doc.data()["email"] as? String ?? ""
+
+                self.db.collection("users").document(self.currentUserUID).updateData([
+                    "friends": FieldValue.arrayUnion([friendUID])
+                ])
+
+                self.db.collection("users").document(friendUID).updateData([
+                    "friends": FieldValue.arrayUnion([self.currentUserUID])
+                ])
+
+                let newFriend = Friend(uid: friendUID, name: friendName, email: friendEmail)
+                self.friendsList.append(newFriend)
+
+                DispatchQueue.main.async {
+                    self.addFriendField.text = ""
                 }
 
-                group.notify(queue: .main) {
-                    self.friendsList = fetchedFriends
-                    self.refreshFriendsUI()
-                }
+                self.showAlert(title: "Success", message: "Friend added!")
+            } else {
+                self.showAlert(title: "Error", message: "User not found.")
             }
         }
     }
-
-    func refreshFriendsUI() {
-        friendsTable.reloadData()
-    }
-
-    func createFriendItem(friend: Friend) -> UIStackView {
-        let item = UIStackView()
-        item.axis = .horizontal
-        item.spacing = 10
-        item.alignment = .center
-        item.translatesAutoresizingMaskIntoConstraints = false
-
-        let profileImageView = UIImageView()
-        profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        profileImageView.image = UIImage(named: "cafe.png")
-        profileImageView.contentMode = .scaleAspectFill
-        profileImageView.clipsToBounds = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        profileImageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        profileImageView.layer.cornerRadius = 25
-
-        let label = UILabel()
-        label.numberOfLines = 0
-        label.text = "\(friend.name)\n\(friend.email)"
-        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-
-        item.addArrangedSubview(profileImageView)
-        item.addArrangedSubview(label)
-
-        return item
-    }
-
+    
     func createBackButton() -> UIButton {
         let backButton = UIButton(type: .system)
         backButton.setTitle("Back", for: .normal)
@@ -182,4 +178,5 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         cell?.nameLabel.text = friend.name
         return cell!
     }
+
 }
