@@ -6,12 +6,15 @@
 //
 
 import UIKit
+import Firebase
+import FirebaseAuth
 
 class MenuViewController: UIViewController {
     
     let settingsSegueIdentifier = "SettingsSegue"
     let favoritesSegueIdentifier = "FavoritesSegue"
     let friendsSegueIdentifier = "FriendsSegue"
+    let currentUserUID = Auth.auth().currentUser?.uid ?? ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,16 +25,18 @@ class MenuViewController: UIViewController {
     func setupUI() {
         view.backgroundColor = background1Light
         let homeMenuButton = createMenuItem(title: "Home")
+        let profileMenuButton = createMenuItem(title: "Profile")
         let favoritesMenuButton = createMenuItem(title: "Favorites")
         let friendsMenuButton = createMenuItem(title: "Friends")
         let settingsMenuButton = createMenuItem(title: "Settings")
         
         homeMenuButton.addTarget(self, action: #selector(homeButtonClicked), for: .touchUpInside)
+        profileMenuButton.addTarget(self, action: #selector(profileButtonClicked), for: .touchUpInside)
         favoritesMenuButton.addTarget(self, action: #selector(favsButtonClicked), for: .touchUpInside)
         settingsMenuButton.addTarget(self, action: #selector(settingsButtonClicked), for: .touchUpInside)
         friendsMenuButton.addTarget(self, action: #selector(friendsButtonClicked), for: .touchUpInside)
         
-        let buttons: [UIButton] = [homeMenuButton, favoritesMenuButton, friendsMenuButton, settingsMenuButton]
+        let buttons: [UIButton] = [homeMenuButton, profileMenuButton, favoritesMenuButton, friendsMenuButton, settingsMenuButton]
         
         var lastButton: UIButton? = nil
         var count = 0
@@ -85,6 +90,13 @@ class MenuViewController: UIViewController {
     
     @objc func homeButtonClicked() {
         self.dismiss(animated: true)
+    }
+    
+    @objc func profileButtonClicked() {
+        let profileVC = ProfileViewController()
+        profileVC.modalPresentationStyle = .fullScreen
+        profileVC.userId = currentUserUID
+        present(profileVC, animated: true)
     }
     
     @objc func favsButtonClicked() {

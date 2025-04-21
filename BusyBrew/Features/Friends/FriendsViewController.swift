@@ -178,6 +178,8 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = friendsTable.dequeueReusableCell(withIdentifier: friendsCellIdentifier, for: indexPath as IndexPath) as? FriendsTableViewCell
         let friend = friendsList[indexPath.row]
+        
+        // TODO: UPDATE PICTURE
         cell?.profilePicture.image = UIImage(named: "cafe.png")
         cell?.nameLabel.text = friend.name
         return cell!
