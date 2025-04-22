@@ -56,7 +56,7 @@ class LoginViewController: UIViewController {
                 guard let authUid = authResult?.user.uid else { return }
                 guard let authEmail = authResult?.user.email else { return }
                 if await UserManager().fetchUserDocument(uid: authUid) == nil {
-                    UserManager().createUserDocument(uid: authUid, email: authEmail)
+                    UserManager().createUserDocument(uid: authUid, email: authEmail, displayName: "")
                 }
             }
             

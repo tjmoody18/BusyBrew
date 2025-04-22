@@ -315,6 +315,18 @@ class PlaceDetailViewController: UIViewController {
     
     @objc func addReviewButtonTapped(_ sender: UIButton) {
         let reviewVC = ShopReviewViewController(cafe: cafe!)
+        
+        reviewVC.onReviewSubmitted = { [weak self] in
+            Task {
+                guard let self = self else { return }
+                guard let cafe = self.cafe else { return }
+                self.reviews = await ReviewManager().fetchAllReviews(forCafeId: cafe.uid)
+                DispatchQueue.main.async {
+                    self.setupUI()
+                }
+            }
+        }
+        
         present(reviewVC, animated: true)
     }
     

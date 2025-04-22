@@ -21,6 +21,8 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
     let seperator = UIView()
     let cafe: Cafe
     
+    var onReviewSubmitted: (() -> Void)?
+    
     var numStarsDict: [String: Int] = [
         "Wifi":0,
         "Clean":0,
@@ -247,6 +249,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
                     outlets: numStarsDict["Outlet"]!,
                     photos: [])
                 ReviewManager().createReviewDocument(forCafeId: cafe.uid, review: review)
+                self.onReviewSubmitted?()
                 self.dismiss(animated: true)
                 print("User found: \(user)")
             } else {
