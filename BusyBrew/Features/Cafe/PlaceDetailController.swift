@@ -21,7 +21,19 @@ class PlaceDetailViewController: UIViewController {
         Review(uid: "Tommy", date: "2/2/2025", text: "I really enjoyed this shop", wifi: 5, cleanliness: 5, outlets: 3, photos: ["cafe.png", "cafe.png"]),
     ]
     
-   
+    lazy var chatButton: UIButton = {
+        let button = UIButton(type: .system)
+        var config = UIButton.Configuration.filled()
+        config.baseBackgroundColor = background1
+        config.title = "Join Cafe Chat"
+        button.configuration = config
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(openCafeChat), for: .touchUpInside)
+        return button
+    }()
+
     
     lazy var nameLabel: UILabel = {
         let label = UILabel()
@@ -319,9 +331,15 @@ class PlaceDetailViewController: UIViewController {
 //        self.currentStatus = status
     }
     
-    
-    
-    
+    @objc func openCafeChat() {
+        guard let cafe = self.cafe else { return }
+        let chatVC = CafeChatViewController()
+        chatVC.cafeId = cafe.uid
+        chatVC.displayName = user?.displayName ?? "Guest"
+        let nav = UINavigationController(rootViewController: chatVC)
+        present(nav, animated: true)
+    }
+
     func reviewItem(review: Review) -> UIView {
         let reviewItem = UIView()
         reviewItem.translatesAutoresizingMaskIntoConstraints = false
@@ -397,6 +415,7 @@ class PlaceDetailViewController: UIViewController {
         
         return reviewItem
     }
+    
     
     func createSeparator() -> UIView {
         let separator = UIView()
@@ -531,6 +550,15 @@ class PlaceDetailViewController: UIViewController {
         topSection.addSubview(reportStatusButton)
         topSection.addSubview(ratingView)
         topSection.addSubview(detailedRatingView)
+        topSection.addSubview(chatButton)
+
+        NSLayoutConstraint.activate([
+            chatButton.topAnchor.constraint(equalTo: reportStatusButton.bottomAnchor, constant: 10),
+            chatButton.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
+            chatButton.trailingAnchor.constraint(equalTo: topSection.trailingAnchor),
+            chatButton.heightAnchor.constraint(equalToConstant: 40)
+        ])
+
         
         cafeImage.heightAnchor.constraint(equalToConstant: 150).isActive = true
         cafeImage.widthAnchor.constraint(equalTo: topSection.widthAnchor).isActive = true
