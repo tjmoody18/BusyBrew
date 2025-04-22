@@ -145,3 +145,21 @@ class CafeChatViewController: UIViewController, UITableViewDelegate, UITableView
         return true
     }
 }
+
+extension PlaceDetailViewController {
+    @objc func openCafeChat() {
+        guard let cafe = self.cafe else { return }
+        let uid = Auth.auth().currentUser?.uid ?? ""
+
+        Firestore.firestore().collection("users").document(uid).getDocument { snapshot, error in
+            let displayName = snapshot?.data()? ["displayName"] as? String ?? "Guest"
+
+            let chatVC = CafeChatViewController()
+            chatVC.cafeId = cafe.uid
+            chatVC.displayName = displayName
+
+            let nav = UINavigationController(rootViewController: chatVC)
+            self.present(nav, animated: true)
+        }
+    }
+}

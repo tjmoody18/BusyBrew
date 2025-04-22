@@ -330,15 +330,6 @@ class PlaceDetailViewController: UIViewController {
         print("CAFE: \(String(describing: cafe))")
 //        self.currentStatus = status
     }
-    
-    @objc func openCafeChat() {
-        guard let cafe = self.cafe else { return }
-        let chatVC = CafeChatViewController()
-        chatVC.cafeId = cafe.uid
-        chatVC.displayName = user?.displayName ?? "Guest"
-        let nav = UINavigationController(rootViewController: chatVC)
-        present(nav, animated: true)
-    }
 
     func reviewItem(review: Review) -> UIView {
         let reviewItem = UIView()

@@ -17,17 +17,33 @@ class UserManager {
     private let db = Firestore.firestore()
     private let documentPath = "users"
     
-    func createUserDocument(uid: String, email: String) {
+//    func createUserDocument(uid: String, email: String) {
+//        
+//        let newUser = User.empty(uid: uid, email: email)
+//        
+//        do {
+//            try db.collection("users").document(uid).setData(from: newUser)
+//        }
+//        catch {
+//            print(error.localizedDescription)
+//        }
+//    }
+    func createUserDocument(uid: String, email: String, displayName: String) {
+        let userData: [String: Any] = [
+            "uid": uid,
+            "email": email,
+            "displayName": displayName
+        ]
         
-        let newUser = User.empty(uid: uid, email: email)
-        
-        do {
-            try db.collection("users").document(uid).setData(from: newUser)
-        }
-        catch {
-            print(error.localizedDescription)
+        db.collection("users").document(uid).setData(userData) { error in
+            if let error = error {
+                print("Error creating user document: \(error.localizedDescription)")
+            } else {
+                print("User document created successfully.")
+            }
         }
     }
+
     
     func updateDocument(uid: String, data: [String: Any]) {
         db.collection("users").document(uid).updateData(data)
