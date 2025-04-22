@@ -127,7 +127,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
             star.tag = i
             star.accessibilityIdentifier = rating // keep track of rating
             star.setImage(UIImage(systemName: i <= numStarsDict[rating]! ? "star.fill" : "star"), for: .normal)
-            star.tintColor = .yellow
+            star.tintColor = background2
             star.addTarget(self, action: #selector(starTapped(_:)), for: .touchUpInside)
             
             stars.addArrangedSubview(star)

@@ -22,10 +22,11 @@ class PlaceDetailViewController: UIViewController {
         let button = UIButton(type: .system)
         var config = UIButton.Configuration.filled()
         config.baseBackgroundColor = background1
-        config.title = "Join Cafe Chat"
+        var title = AttributedString("Live Chat")
+        title.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+        config.attributedTitle = title
         button.configuration = config
         button.setTitleColor(.white, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(openCafeChat), for: .touchUpInside)
         return button
@@ -89,6 +90,7 @@ class PlaceDetailViewController: UIViewController {
         cafeImage.contentMode = .scaleToFill
         cafeImage.contentMode = .scaleAspectFill
         cafeImage.translatesAutoresizingMaskIntoConstraints = false
+        cafeImage.clipsToBounds = true
         return cafeImage
     }()
     
@@ -565,7 +567,7 @@ class PlaceDetailViewController: UIViewController {
             chatButton.topAnchor.constraint(equalTo: reportStatusButton.bottomAnchor, constant: 10),
             chatButton.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
             chatButton.trailingAnchor.constraint(equalTo: topSection.trailingAnchor),
-            chatButton.heightAnchor.constraint(equalToConstant: 40)
+//            chatButton.heightAnchor.constraint(equalToConstant: 40)
         ])
 
         
@@ -697,7 +699,7 @@ class PlaceDetailViewController: UIViewController {
             cafeImage.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
             cafeImage.trailingAnchor.constraint(equalTo: topSection.trailingAnchor),
             cafeImage.topAnchor.constraint(equalTo: contactStackView.bottomAnchor, constant: 10),
-//            cafeImage.heightAnchor.constraint(equalToConstant: 15)
+            cafeImage.heightAnchor.constraint(equalToConstant: 150)
         ])
 
         
@@ -715,7 +717,7 @@ class PlaceDetailViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             ratingView.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
-            ratingView.topAnchor.constraint(equalTo: reportStatusButton.bottomAnchor, constant: 15),
+            ratingView.topAnchor.constraint(equalTo: chatButton.bottomAnchor, constant: 15),
             
             overallRating.topAnchor.constraint(equalTo: ratingLabel.bottomAnchor, constant: 1),
             
