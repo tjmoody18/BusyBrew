@@ -243,7 +243,7 @@ class PlaceDetailViewController: UIViewController {
                 print("Cafe found: \(cafe)")
                 print("CAFE STATUS: \(cafe.status)")
                 
-                let favFlag = user!.favorites.contains(self.cafe!.uid)
+                let favFlag = user?.favorites.contains(self.cafe?.uid ?? "") ?? false
                 
                 DispatchQueue.main.async {
                     self.setupUI()
