@@ -7,6 +7,8 @@
 
 import Foundation
 import UIKit
+import FirebaseAuth
+import FirebaseFirestore
 
 class PlaceDetailViewController: UIViewController {
     var user: User?
@@ -744,4 +746,24 @@ class PlaceDetailViewController: UIViewController {
         print()
         print("ScrollView content size: \(scrollView.contentSize)")
     }
+}
+
+
+extension PlaceDetailViewController {
+  @objc func openCafeChat() {
+    guard let cafe = self.cafe else { return }
+    let uid = Auth.auth().currentUser?.uid ?? ""
+    Firestore
+      .firestore()
+      .collection("users")
+      .document(uid)
+      .getDocument { snapshot, error in
+        let displayName = snapshot?.data()?["displayName"] as? String ?? "Guest"
+        let chatVC = CafeChatViewController()
+        chatVC.cafeId      = cafe.uid
+        chatVC.displayName = displayName
+        let nav = UINavigationController(rootViewController: chatVC)
+        self.present(nav, animated: true)
+      }
+  }
 }
