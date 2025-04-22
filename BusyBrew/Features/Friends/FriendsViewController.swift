@@ -54,6 +54,7 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         title.font = UIFont.systemFont(ofSize: 48, weight: .bold)
         title.textColor = background1
 
+        // Add Friends button
         let addButton = UIButton(type: .system)
         var config = UIButton.Configuration.filled()
         config.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10)
@@ -64,7 +65,27 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         addButton.configuration = config
         addButton.addTarget(self, action: #selector(addFriendTapped), for: .touchUpInside)
         addButton.translatesAutoresizingMaskIntoConstraints = false
-        
+
+        // Incoming Requests button
+        let requestsButton = UIButton(type: .system)
+        var requestConfig = UIButton.Configuration.filled()
+        requestConfig.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10)
+        requestConfig.baseBackgroundColor = background1
+        var requestTitle = AttributedString("Incoming Requests")
+        requestTitle.font = .systemFont(ofSize: 14, weight: .semibold)
+        requestConfig.attributedTitle = requestTitle
+        requestsButton.configuration = requestConfig
+        requestsButton.addTarget(self, action: #selector(openFriendRequests), for: .touchUpInside)
+        requestsButton.translatesAutoresizingMaskIntoConstraints = false
+
+        // Combine buttons into a horizontal row
+        let buttonRow = UIStackView(arrangedSubviews: [addButton, requestsButton])
+        buttonRow.axis = .horizontal
+        buttonRow.spacing = 10
+        buttonRow.alignment = .center
+        buttonRow.distribution = .fillEqually
+        buttonRow.translatesAutoresizingMaskIntoConstraints = false
+
         friendsTable.translatesAutoresizingMaskIntoConstraints = false
         friendsTable.backgroundColor = background3
         friendsTable.estimatedRowHeight = 100
@@ -72,7 +93,7 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
 
         contentBody.addArrangedSubview(backButton)
         contentBody.addArrangedSubview(title)
-        contentBody.addArrangedSubview(addButton)
+        contentBody.addArrangedSubview(buttonRow)
         contentBody.addArrangedSubview(friendsTable)
 
         NSLayoutConstraint.activate([
@@ -81,12 +102,23 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
             contentBody.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
             contentBody.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
             contentBody.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -80),
-        
-            friendsTable.topAnchor.constraint(equalTo: addButton.bottomAnchor, constant: 10),
+
+            addButton.heightAnchor.constraint(equalToConstant: 40),
+            requestsButton.heightAnchor.constraint(equalTo: addButton.heightAnchor),
+
+            friendsTable.topAnchor.constraint(equalTo: buttonRow.bottomAnchor, constant: 10),
             friendsTable.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor),
             friendsTable.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor),
         ])
     }
+
+    
+    @objc func openFriendRequests() {
+        let requestVC = FriendRequestsViewController()
+        requestVC.modalPresentationStyle = .fullScreen
+        present(requestVC, animated: true)
+    }
+
 
     @objc func addFriendTapped() {
         let addVC = AddFriendsViewController()
@@ -120,6 +152,67 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
             }
         }
     }
+    
+    func showToast(message: String) {
+        let toastLabel = UILabel()
+        toastLabel.text = message
+        toastLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        toastLabel.textColor = .white
+        toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        toastLabel.textAlignment = .center
+        toastLabel.numberOfLines = 0
+        toastLabel.alpha = 0
+        toastLabel.layer.cornerRadius = 10
+        toastLabel.clipsToBounds = true
+        toastLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(toastLabel)
+
+        NSLayoutConstraint.activate([
+            toastLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            toastLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -40),
+            toastLabel.widthAnchor.constraint(lessThanOrEqualToConstant: 280),
+            toastLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 32)
+        ])
+
+        UIView.animate(withDuration: 0.4, animations: {
+            toastLabel.alpha = 1.0
+        }) { _ in
+            UIView.animate(withDuration: 0.4, delay: 1.6, options: .curveEaseOut, animations: {
+                toastLabel.alpha = 0.0
+            }) { _ in
+                toastLabel.removeFromSuperview()
+            }
+        }
+    }
+
+    
+    func removeFriend(_ friend: Friend) {
+        let alert = UIAlertController(
+            title: "Remove Friend?",
+            message: "Are you sure you want to remove \(friend.name)?",
+            preferredStyle: .alert
+        )
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        alert.addAction(UIAlertAction(title: "Remove", style: .destructive, handler: { _ in
+            self.db.collection("users").document(self.currentUserUID).updateData([
+                "friends": FieldValue.arrayRemove([friend.uid])
+            ])
+
+            self.db.collection("users").document(friend.uid).updateData([
+                "friends": FieldValue.arrayRemove([self.currentUserUID])
+            ])
+
+            self.friendsList.removeAll { $0.uid == friend.uid }
+            self.friendsTable.reloadData()
+            self.showToast(message: "\(friend.name) removed.")
+        }))
+
+        present(alert, animated: true)
+    }
+
 
     func refreshFriendsUI() {
         friendsTable.reloadData()
@@ -182,4 +275,19 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
         cell?.nameLabel.text = friend.name
         return cell!
     }
+    
+    // Swipe-to-remove action
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let friend = friendsList[indexPath.row]
+
+        let removeAction = UIContextualAction(style: .destructive, title: "Remove") { _, _, completionHandler in
+            self.removeFriend(friend)
+            completionHandler(true)
+        }
+
+        removeAction.backgroundColor = .systemRed
+
+        return UISwipeActionsConfiguration(actions: [removeAction])
+    }
+
 }

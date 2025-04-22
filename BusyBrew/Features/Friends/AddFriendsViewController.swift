@@ -60,7 +60,7 @@ class AddFriendsViewController: UIViewController, UITableViewDelegate, UITableVi
         addStack.distribution = .fillProportionally
         
         addFriendField.translatesAutoresizingMaskIntoConstraints = false
-        addFriendField.placeholder = "Enter name"
+        addFriendField.placeholder = "Enter email"
         addFriendField.borderStyle = .roundedRect
         addFriendField.font = .systemFont(ofSize: 14, weight: .regular)
         
@@ -104,49 +104,66 @@ class AddFriendsViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     @objc func addFriendTapped() {
-        let email = addFriendField.text ?? ""
+        let email = addFriendField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        
         if email.isEmpty || currentUserUID.isEmpty {
             showAlert(title: "Error", message: "Please enter a valid email.")
             return
         }
 
         if email == currentUserEmail {
-            showAlert(title: "Invalid", message: "You cannot add yourself as a friend.")
-            return
-        }
-
-        if friendsList.contains(where: { $0.email == email }) {
-            showAlert(title: "Already Friends", message: "You already added this friend.")
+            showAlert(title: "Invalid", message: "You cannot add yourself.")
             return
         }
 
         db.collection("users").whereField("email", isEqualTo: email).getDocuments { snapshot, error in
-            if let snapshot = snapshot, let doc = snapshot.documents.first {
+            if let doc = snapshot?.documents.first {
                 let friendUID = doc.documentID
                 let friendName = doc.data()["displayName"] as? String ?? "Unknown"
                 let friendEmail = doc.data()["email"] as? String ?? ""
 
-                self.db.collection("users").document(self.currentUserUID).updateData([
-                    "friends": FieldValue.arrayUnion([friendUID])
-                ])
+                // Check if already friends
+                self.db.collection("users").document(friendUID).getDocument { friendDoc, _ in
+                    let theirFriends = friendDoc?.data()?["friends"] as? [String] ?? []
+                    if theirFriends.contains(self.currentUserUID) {
+                        self.showAlert(title: "Already Friends", message: "You're already friends with this user.")
+                        return
+                    }
 
-                self.db.collection("users").document(friendUID).updateData([
-                    "friends": FieldValue.arrayUnion([self.currentUserUID])
-                ])
+                    // Check if request already sent
+                    self.db.collection("users").document(friendUID).collection("friendRequests")
+                        .document(self.currentUserUID).getDocument { reqDoc, _ in
+                            if reqDoc?.exists == true {
+                                self.showAlert(title: "Already Requested", message: "Friend request already sent.")
+                                return
+                            }
 
-                let newFriend = Friend(uid: friendUID, name: friendName, email: friendEmail)
-                self.friendsList.append(newFriend)
-
-                DispatchQueue.main.async {
-                    self.addFriendField.text = ""
+                            // Send request
+                            self.db.collection("users").document(friendUID)
+                                .collection("friendRequests")
+                                .document(self.currentUserUID)
+                                .setData([
+                                    "timestamp": FieldValue.serverTimestamp(),
+                                    "email": self.currentUserEmail
+                                ]) { err in
+                                    if let err = err {
+                                        self.showAlert(title: "Error", message: err.localizedDescription)
+                                    } else {
+                                        DispatchQueue.main.async {
+                                            self.addFriendField.text = ""
+                                            self.showAlert(title: "Sent", message: "Friend request sent to \(friendName)!")
+                                        }
+                                    }
+                                }
+                        }
                 }
-
-                self.showAlert(title: "Success", message: "Friend added!")
             } else {
                 self.showAlert(title: "Error", message: "User not found.")
             }
         }
     }
+
+
     
     func createBackButton() -> UIButton {
         let backButton = UIButton(type: .system)
