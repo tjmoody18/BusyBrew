@@ -32,7 +32,11 @@ class UserManager {
         let userData: [String: Any] = [
             "uid": uid,
             "email": email,
-            "displayName": displayName
+            "displayName": displayName,
+            "photoUrl": "",
+            "favorites": [],
+            "friends": []
+            
         ]
         
         db.collection("users").document(uid).setData(userData) { error in
@@ -56,7 +60,7 @@ class UserManager {
             return userDocument
         }
         catch {
-            print(error.localizedDescription)
+            print("Error fetching user document: \(error.localizedDescription)")
             return nil
         }
     }
