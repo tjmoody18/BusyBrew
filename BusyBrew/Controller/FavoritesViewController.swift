@@ -1,5 +1,3 @@
-
-
 //
 //  FavoritesViewController.swift
 //  BusyBrew
@@ -8,10 +6,13 @@
 //
 
 import UIKit
+import FirebaseAuth
+import FirebaseFirestore
 
-class FavoritesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource{
+class FavoritesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var favorites: [Cafe] = []
+    var userId: String?
     
     let backButton = UIButton(type: .system)
     let favoritesTable = UITableView()
@@ -26,20 +27,16 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
         favoritesTable.dataSource = self
         favoritesTable.delegate = self
         getFavorites()
-        print("check for favorites", self.favorites)
     }
     
     func setupUI() {
         view.backgroundColor = background3
         createBackButton()
         addHeaders()
-        favoritesTable.reloadData()
         setupTable()
     }
     
     func setupTable() {
-        favoritesTable.dataSource = self
-        favoritesTable.delegate = self
         favoritesTable.translatesAutoresizingMaskIntoConstraints = false
         favoritesTable.backgroundColor = background3
         favoritesTable.estimatedRowHeight = 100
@@ -55,14 +52,15 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
     }
     
     func addHeaders() {
-        // Create and add "Favorites" Label
+        backButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(backButton)
+        
         favoritesLabel.text = "Favorites"
         favoritesLabel.font = UIFont.systemFont(ofSize: 42, weight: .bold)
-        favoritesLabel.textColor = UIColor(red: 88/255, green: 136/255, blue: 59/255, alpha: 1) // Custom green
+        favoritesLabel.textColor = UIColor(red: 88/255, green: 136/255, blue: 59/255, alpha: 1)
         favoritesLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(favoritesLabel)
         
-        // Create and add Subheader Label
         subtitleLabel.text = "All your favs in one spot."
         subtitleLabel.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         subtitleLabel.textColor = UIColor.black.withAlphaComponent(0.7)
@@ -88,14 +86,16 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
         let attributes: [NSAttributedString.Key: Any] = [
             .underlineStyle: NSUnderlineStyle.single.rawValue
         ]
-        backButton.titleLabel?.attributedText = NSAttributedString(string: backButton.titleLabel?.text ?? "", attributes: attributes)
+        backButton.titleLabel?.attributedText = NSAttributedString(
+            string: backButton.titleLabel?.text ?? "",
+            attributes: attributes
+        )
         backButton.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
-        self.view.addSubview(backButton)
-        backButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(backButton)
     }
     
     @objc func backButtonTapped() {
-        self.dismiss(animated: true)
+        dismiss(animated: true)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -103,30 +103,42 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = favoritesTable.dequeueReusableCell(withIdentifier: favoriteCellIdentifier, for: indexPath as IndexPath) as? FavoriteTableViewCell
+        let cell = favoritesTable.dequeueReusableCell(
+            withIdentifier: favoriteCellIdentifier,
+            for: indexPath
+        ) as! FavoriteTableViewCell
         let cafeFavorite = favorites[indexPath.row]
-        cell?.cafeImage.image = UIImage(named: cafeFavorite.image)
-        cell?.nameLabel.text = cafeFavorite.name
-        cell?.statusLabel.text = cafeFavorite.status
-        return cell!
+        cell.cafeImage.image = UIImage(named: cafeFavorite.image)
+        cell.nameLabel.text = cafeFavorite.name
+        cell.statusLabel.text = cafeFavorite.status
+        return cell
     }
     
-    func getFavorites() {
-        Task {
-            if let user = await UserManager().fetchUserDocument() {
-                for fav in user.favorites {
-                    print("Here user found")
-                    let cafe = await CafeManager().fetchCafeDocument(uid: fav)
-                    self.favorites.append(cafe!)
+    private func getFavorites() {
+        let uid = userId ?? Auth.auth().currentUser?.uid ?? ""
+        let db = Firestore.firestore()
+        
+        db.collection("users")
+          .document(uid)
+          .getDocument { [weak self] snapshot, error in
+            guard let self = self,
+                  let data = snapshot?.data(),
+                  let favIDs = data["favorites"] as? [String] else {
+                return
+            }
+            
+            Task {
+                var loaded: [Cafe] = []
+                for favID in favIDs {
+                    if let cafe = await CafeManager().fetchCafeDocument(uid: favID) {
+                        loaded.append(cafe)
+                    }
                 }
                 DispatchQueue.main.async {
+                    self.favorites = loaded
                     self.favoritesTable.reloadData()
                 }
-                print("User found: \(user)")
-            } else {
-                print("Failed to fetch user data")
             }
         }
-        favoritesTable.reloadData()
     }
 }
