@@ -105,14 +105,16 @@ class ProfileViewController: UIViewController {
         rows.spacing = 10
         
         let favorites = UIView()
+        favorites.backgroundColor = background1Light
         let friends = UIView()
+        friends.backgroundColor = darkBlue
         let reviews = UIView()
+        reviews.backgroundColor = darkRed
         
         [favorites, friends, reviews].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             // Add a fixed height so they appear as “rectangles”
             $0.heightAnchor.constraint(equalToConstant: 150).isActive = true
-            $0.backgroundColor = background1Light
         }
         
         let friendsData = UIStackView()
@@ -124,10 +126,12 @@ class ProfileViewController: UIViewController {
         let numFriends = UILabel()
         numFriends.text = "50"
         numFriends.font = UIFont.systemFont(ofSize: 60, weight: .black)
+        numFriends.textColor = .white
         
         let friendsLabel = UILabel()
         friendsLabel.text = "Friends"
-        friendsLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        friendsLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        friendsLabel.textColor = .white
         
         friendsData.addArrangedSubview(numFriends)
         friendsData.addArrangedSubview(friendsLabel)
@@ -142,10 +146,12 @@ class ProfileViewController: UIViewController {
         let numFavs = UILabel()
         numFavs.text = "50"
         numFavs.font = UIFont.systemFont(ofSize: 60, weight: .black)
+        numFavs.textColor = .white
         
         let favsLabel = UILabel()
         favsLabel.text = "Favorites"
-        favsLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        favsLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        favsLabel.textColor = .white
         
         favoritesData.addArrangedSubview(numFavs)
         favoritesData.addArrangedSubview(favsLabel)
@@ -160,10 +166,12 @@ class ProfileViewController: UIViewController {
         let numReviews = UILabel()
         numReviews.text = "50"
         numReviews.font = UIFont.systemFont(ofSize: 60, weight: .black)
+        numReviews.textColor = .white
         
         let reviewsLabel = UILabel()
         reviewsLabel.text = "Reviews"
-        reviewsLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        reviewsLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        reviewsLabel.textColor = .white
         
         reviewsData.addArrangedSubview(numReviews)
         reviewsData.addArrangedSubview(reviewsLabel)
