@@ -51,6 +51,15 @@ class LoginViewController: UIViewController {
                 return
             }
             
+            // Add user if not already in database when logging in
+            Task {
+                guard let authUid = authResult?.user.uid else { return }
+                guard let authEmail = authResult?.user.email else { return }
+                if await UserManager().fetchUserDocument(uid: authUid) == nil {
+                    UserManager().createUserDocument(uid: authUid, email: authEmail)
+                }
+            }
+            
             print("User logged in: \(authResult?.user.email ?? "No email")")
             
             DispatchQueue.main.async {

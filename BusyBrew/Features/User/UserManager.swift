@@ -49,6 +49,18 @@ class UserManager {
         db.collection("users").document(uid).updateData(data)
     }
     
+    func fetchUserDocument(uid: String) async -> User? {
+        do {
+            let userDocument = try await db.collection("users").document(uid).getDocument(as: User.self)
+            print("Fetched and decoded User: \(userDocument)")
+            return userDocument
+        }
+        catch {
+            print(error.localizedDescription)
+            return nil
+        }
+    }
+    
     func fetchUserDocument() async -> User? {
         guard let user = Auth.auth().currentUser else { return nil }
         
