@@ -16,10 +16,7 @@ class PlaceDetailViewController: UIViewController {
     let place: PlaceAnnotation
     let rating = 5.0
     let categories = ["wifi quality", "cleanliness", "outlets availability"]
-    let reviews = [
-        Review(uid: "Jim", date: "2/28/2025", text: "I really enjoyed this shop", wifi: 5, cleanliness: 5, outlets: 5, photos: []),
-        Review(uid: "Tommy", date: "2/2/2025", text: "I really enjoyed this shop", wifi: 5, cleanliness: 5, outlets: 3, photos: ["cafe.png", "cafe.png"]),
-    ]
+    var reviews = [] as [Review]
     
    
     
@@ -226,6 +223,7 @@ class PlaceDetailViewController: UIViewController {
             
             if let cafe = await CafeManager().fetchCafeDocument(uid: place.placeId) {
                 self.cafe = cafe
+                self.reviews = await ReviewManager().fetchAllReviews(forCafeId: cafe.uid)
                 print("Cafe found: \(cafe)")
                 print("CAFE STATUS: \(cafe.status)")
                 
@@ -247,9 +245,7 @@ class PlaceDetailViewController: UIViewController {
                 
             }
             
-            for review in reviews {
-                ReviewManager().createReviewDocument(forCafeId: place.placeId, review: review)
-            }
+            
             
         }
     }
@@ -306,7 +302,7 @@ class PlaceDetailViewController: UIViewController {
     
     
     @objc func addReviewButtonTapped(_ sender: UIButton) {
-        let reviewVC = ShopReviewViewController()
+        let reviewVC = ShopReviewViewController(cafe: cafe!)
         present(reviewVC, animated: true)
     }
     
@@ -327,7 +323,7 @@ class PlaceDetailViewController: UIViewController {
         reviewItem.translatesAutoresizingMaskIntoConstraints = false
         let username = UILabel()
         username.translatesAutoresizingMaskIntoConstraints = false
-        username.text = review.uid
+        username.text = review.displayName
         username.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         
         let date = UILabel()
