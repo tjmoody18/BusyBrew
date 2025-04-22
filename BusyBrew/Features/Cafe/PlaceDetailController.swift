@@ -55,7 +55,6 @@ class PlaceDetailViewController: UIViewController {
         let heartImage = UIImage(systemName: "heart")
         button.setImage(heartImage, for: .normal)
         button.tintColor = .systemRed
-//        button.backgroundColor = .red
         button.translatesAutoresizingMaskIntoConstraints = false
         button.layer.cornerRadius = 4
         return button
@@ -66,6 +65,7 @@ class PlaceDetailViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .left
         label.font = UIFont.systemFont(ofSize: 12, weight: .regular)
+        label.alpha = 0.4
         label.alpha = 0.4
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
@@ -161,6 +161,8 @@ class PlaceDetailViewController: UIViewController {
                                     }.resume()
                                 }
                             }
+                            
+                            
                         }
                     }
                 }
@@ -171,6 +173,8 @@ class PlaceDetailViewController: UIViewController {
                 }
             }
         }
+
+        print("fav is ", isFavorite)
     }
     
     func fetchPlaceIDFromGoogle(name: String, latitude: Double, longitude: Double, completion: @escaping (String?) -> Void) {
@@ -239,8 +243,14 @@ class PlaceDetailViewController: UIViewController {
                 print("Cafe found: \(cafe)")
                 print("CAFE STATUS: \(cafe.status)")
                 
+                let favFlag = user!.favorites.contains(self.cafe!.uid)
+                
                 DispatchQueue.main.async {
                     self.setupUI()
+                    self.isFavorite = favFlag
+                    if self.isFavorite {
+                        self.favButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
+                    }
                 }
                 
             } else {
@@ -249,12 +259,12 @@ class PlaceDetailViewController: UIViewController {
                 let newCafe = Cafe.empty(uid: place.placeId, name: place.name)
                 CafeManager().createCafeDocument(cafe: newCafe)
                 
+                
                 // set up ui after cafe is fetched and set (or created if not found)
                 DispatchQueue.main.async {
                     self.cafe = newCafe
                     self.setupUI()
                 }
-                
             }
             
             
@@ -274,10 +284,10 @@ class PlaceDetailViewController: UIViewController {
         
 //        add this cafe to the 
         if isFavorite {
-            
+            UserManager().addFavorite(uid: user!.uid, data: cafe!.uid)
         }
         else {
-            
+            UserManager().deleteFavorite(uid: user!.uid, data: cafe!.uid)
         }
     }
     
@@ -562,6 +572,7 @@ class PlaceDetailViewController: UIViewController {
         cafeImage.heightAnchor.constraint(equalToConstant: 150).isActive = true
         cafeImage.widthAnchor.constraint(equalTo: topSection.widthAnchor).isActive = true
         
+        favButton.addTarget(self, action: #selector(favButtonTapped), for: .touchUpInside)
         // REVIEWS
         let reviewSection = UIStackView()
         reviewSection.translatesAutoresizingMaskIntoConstraints = false
@@ -593,9 +604,7 @@ class PlaceDetailViewController: UIViewController {
         ]
         addReviewButton.setAttributedTitle(NSAttributedString(string: "+ Add your own", attributes: underlined), for: .normal)
         addReviewButton.translatesAutoresizingMaskIntoConstraints = false
-    
         addReviewButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
-  
         
         reviewTitleAndButton.addArrangedSubview(reviewTitle)
         reviewTitleAndButton.addArrangedSubview(addReviewButton)

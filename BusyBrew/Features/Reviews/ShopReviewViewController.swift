@@ -64,7 +64,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
         pageTitle.translatesAutoresizingMaskIntoConstraints = false
         pageTitle.font = UIFont.systemFont(ofSize: 35, weight: .bold)
         NSLayoutConstraint.activate([
-            pageTitle.topAnchor.constraint(equalTo: view.topAnchor, constant: 95),
+            pageTitle.topAnchor.constraint(equalTo: view.topAnchor, constant: 45),
             pageTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40)
         ])
     }
