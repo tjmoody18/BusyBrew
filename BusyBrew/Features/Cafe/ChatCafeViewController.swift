@@ -1,95 +1,62 @@
 //
-//  ChatCafeViewController.swift
+//  CafeChatViewController.swift
 //  BusyBrew
 //
 //  Created by Nabil Chowdhury on 4/21/25.
-//
+//m p
 import UIKit
 import Firebase
 import FirebaseAuth
 
-class CafeChatViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
+class CafeChatViewController: UIViewController {
+  
+  struct ChatMessage {
+    let senderId: String
+    let senderName: String
+    let text: String
+    let timestamp: Timestamp
+  }
 
-    struct ChatMessage {
-        let senderId: String
-        let senderName: String
-        let text: String
-        let timestamp: Timestamp
-    }
-
-    var messages: [ChatMessage] = []
-    let db = Firestore.firestore()
-
-    var cafeId: String = "" // set this before presenting the VC
-    var displayName: String = ""
-
-    let tableView = UITableView()
-    let messageField = UITextField()
-    let sendButton = UIButton(type: .system)
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-        fetchMessages()
-    }
-
-    func getTodayKey() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: Date())
-    }
-
-    func fetchMessages() {
-        let todayKey = getTodayKey()
-        db.collection("chats").document(cafeId).collection(todayKey).order(by: "timestamp")
-            .addSnapshotListener { snapshot, error in
-                if let documents = snapshot?.documents {
-                    self.messages = documents.compactMap { doc in
-                        let data = doc.data()
-                        guard let senderId = data["senderId"] as? String,
-                              let senderName = data["senderName"] as? String,
-                              let text = data["text"] as? String,
-                              let timestamp = data["timestamp"] as? Timestamp else { return nil }
-                        return ChatMessage(senderId: senderId, senderName: senderName, text: text, timestamp: timestamp)
-                    }
-
-                    DispatchQueue.main.async {
-                        self.tableView.reloadData()
-                        if !self.messages.isEmpty {
-                            let indexPath = IndexPath(row: self.messages.count - 1, section: 0)
-                            self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
-                        }
-                    }
-                }
-            }
-    }
-
-    func sendMessage(text: String) {
-        guard let currentUser = Auth.auth().currentUser else { return }
-
-        let messageData: [String: Any] = [
-            "senderId": currentUser.uid,
-            "senderName": displayName,
-            "text": text,
-            "timestamp": FieldValue.serverTimestamp()
-        ]
-
-        let todayKey = getTodayKey()
-        db.collection("chats").document(cafeId).collection(todayKey).addDocument(data: messageData)
-    }
-
-    func setupUI() {
+  private let tableView = UITableView()
+  private let messageField = UITextField()
+  private let sendButton = UIButton(type: .system)
+  private var inputBottomConstraint: NSLayoutConstraint!
+  
+  private var messages: [ChatMessage] = []
+  private let db = Firestore.firestore()
+  var cafeId: String = ""
+  var displayName: String = ""
+  
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    setupUI()
+    fetchMessages()
+    registerForKeyboardNotifications()
+  }
+  
+  deinit {
+    NotificationCenter.default.removeObserver(self)
+  }
+  
+  
+    private func setupUI() {
         title = "Cafe Chat"
         view.backgroundColor = .systemBackground
 
+        // TableView
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
         tableView.separatorStyle = .none
+        tableView.register(ChatMessageCell.self, forCellReuseIdentifier: "ChatMessageCell")
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 80
+        tableView.keyboardDismissMode = .interactive
 
+        // Input field & button
         messageField.borderStyle = .roundedRect
-        messageField.placeholder = "Type a message..."
+        messageField.placeholder = "Type a message…"
         messageField.delegate = self
         messageField.translatesAutoresizingMaskIntoConstraints = false
 
@@ -105,61 +72,160 @@ class CafeChatViewController: UIViewController, UITableViewDelegate, UITableView
         view.addSubview(tableView)
         view.addSubview(inputStack)
 
+        // Pin input bar 10 pt above safe area (not 0)
+        inputBottomConstraint = inputStack.bottomAnchor.constraint(
+            equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+            constant: -10
+        )
+
         NSLayoutConstraint.activate([
-            inputStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
-            inputStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-            inputStack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
-
-            messageField.heightAnchor.constraint(equalToConstant: 40),
-
+            // tableView fills above the inputStack
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: inputStack.topAnchor, constant: -10)
+            tableView.bottomAnchor.constraint(equalTo: inputStack.topAnchor),
+
+            // inputStack
+            inputStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+            inputStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+            inputBottomConstraint,
+            messageField.heightAnchor.constraint(equalToConstant: 40)
         ])
+
+        // Initial content inset so bubbles sit 10 pt above the bar
+        tableView.contentInset.bottom = 50
+        tableView.scrollIndicatorInsets = tableView.contentInset
     }
 
-    @objc func sendButtonTapped() {
-        if let text = messageField.text, !text.trimmingCharacters(in: .whitespaces).isEmpty {
-            sendMessage(text: text)
-            messageField.text = ""
+    @objc private func keyboardWillShow(_ note: Notification) {
+        guard
+            let info = note.userInfo,
+            let frame = (info[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
+        else { return }
+
+        let keyboardHeight = frame.height
+
+        // Slide the input bar up by keyboardHeight + 10 pt gap
+        inputBottomConstraint.constant = -keyboardHeight - 10
+
+        // Bump table inset by the same amount
+        tableView.contentInset.bottom = 50
+        tableView.scrollIndicatorInsets = tableView.contentInset
+
+        UIView.animate(withDuration: 0.25) {
+            self.view.layoutIfNeeded()
         }
     }
 
-    // MARK: - TableView
+    @objc private func keyboardWillHide(_ note: Notification) {
+        // Restore bar back to -10 pt
+        inputBottomConstraint.constant = -10
 
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return messages.count
+        // Restore table inset to 40 pt bar + 10 pt gap
+        tableView.contentInset.bottom = 50
+        tableView.scrollIndicatorInsets = tableView.contentInset
+
+        UIView.animate(withDuration: 0.25) {
+            self.view.layoutIfNeeded()
+        }
     }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        let message = messages[indexPath.row]
-        cell.textLabel?.text = "\(message.senderName): \(message.text)"
-        cell.textLabel?.numberOfLines = 0
-        return cell
-    }
+  private func registerForKeyboardNotifications() {
+    NotificationCenter.default.addObserver(self,
+      selector: #selector(keyboardWillShow(_:)),
+      name: UIResponder.keyboardWillShowNotification,
+      object: nil)
+    
+    NotificationCenter.default.addObserver(self,
+      selector: #selector(keyboardWillHide(_:)),
+      name: UIResponder.keyboardWillHideNotification,
+      object: nil)
+  }
 
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        sendButtonTapped()
-        return true
-    }
+  private func getTodayKey() -> String {
+    let f = DateFormatter()
+    f.dateFormat = "yyyy-MM-dd"
+    return f.string(from: Date())
+  }
+  
+  private func fetchMessages() {
+    let key = getTodayKey()
+    db.collection("chats")
+      .document(cafeId)
+      .collection(key)
+      .order(by: "timestamp")
+      .addSnapshotListener { [weak self] snap, _ in
+        guard let self = self else { return }
+        self.messages = snap?.documents.compactMap { doc in
+          let d = doc.data()
+          guard let sid = d["senderId"] as? String,
+                let sn = d["senderName"] as? String,
+                let txt = d["text"] as? String,
+                let ts  = d["timestamp"] as? Timestamp
+          else { return nil }
+          return ChatMessage(senderId: sid, senderName: sn, text: txt, timestamp: ts)
+        } ?? []
+        
+        DispatchQueue.main.async {
+          self.tableView.reloadData()
+          if !self.messages.isEmpty {
+            let ip = IndexPath(row: self.messages.count - 1, section: 0)
+            self.tableView.scrollToRow(at: ip, at: .bottom, animated: true)
+          }
+        }
+      }
+  }
+  
+  private func sendMessage(text: String) {
+    guard let uid = Auth.auth().currentUser?.uid else { return }
+    let data: [String:Any] = [
+      "senderId": uid,
+      "senderName": displayName,
+      "text": text,
+      "timestamp": FieldValue.serverTimestamp()
+    ]
+    let key = getTodayKey()
+    db.collection("chats").document(cafeId).collection(key).addDocument(data: data)
+  }
+  
+  
+  @objc private func sendButtonTapped() {
+    guard let txt = messageField.text?.trimmingCharacters(in: .whitespaces),
+          !txt.isEmpty
+    else { return }
+    sendMessage(text: txt)
+    messageField.text = ""
+  }
+  
 }
 
-extension PlaceDetailViewController {
-    @objc func openCafeChat() {
-        guard let cafe = self.cafe else { return }
-        let uid = Auth.auth().currentUser?.uid ?? ""
 
-        Firestore.firestore().collection("users").document(uid).getDocument { snapshot, error in
-            let displayName = snapshot?.data()? ["displayName"] as? String ?? "Guest"
+extension CafeChatViewController: UITableViewDelegate, UITableViewDataSource {
+  
+  func tableView(_ tv: UITableView, numberOfRowsInSection section: Int) -> Int {
+    messages.count
+  }
+  
+  func tableView(_ tv: UITableView, cellForRowAt ip: IndexPath) -> UITableViewCell {
+    let msg  = messages[ip.row]
+    let cell = tv.dequeueReusableCell(withIdentifier: "ChatMessageCell", for: ip) as! ChatMessageCell
+    
+    cell.nameLabel.text    = msg.senderName
+    cell.messageLabel.text = msg.text
+    cell.isIncoming        = (msg.senderId != Auth.auth().currentUser?.uid)
+    
+    let fmt = DateFormatter()
+    fmt.timeStyle = .short
+    cell.timeLabel.text = fmt.string(from: msg.timestamp.dateValue())
+    
+    return cell
+  }
+  
+}
 
-            let chatVC = CafeChatViewController()
-            chatVC.cafeId = cafe.uid
-            chatVC.displayName = displayName
-
-            let nav = UINavigationController(rootViewController: chatVC)
-            self.present(nav, animated: true)
-        }
-    }
+extension CafeChatViewController: UITextFieldDelegate {
+  func textFieldShouldReturn(_ tf: UITextField) -> Bool {
+    sendButtonTapped()
+    return true
+  }
 }

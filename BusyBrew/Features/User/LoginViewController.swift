@@ -55,8 +55,10 @@ class LoginViewController: UIViewController {
             Task {
                 guard let authUid = authResult?.user.uid else { return }
                 guard let authEmail = authResult?.user.email else { return }
+                let displayName = Auth.auth().currentUser?.displayName ?? "Guest"
+
                 if await UserManager().fetchUserDocument(uid: authUid) == nil {
-                    UserManager().createUserDocument(uid: authUid, email: authEmail, displayName: "")
+                    UserManager().createUserDocument(uid: authUid, email: authEmail, displayName: displayName)
                 }
             }
             

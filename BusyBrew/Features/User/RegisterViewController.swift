@@ -54,6 +54,15 @@ class RegisterViewController: UIViewController {
 
             // Create user document with username
             UserManager().createUserDocument(uid: authUid, email: email, displayName: username)
+            let changeRequest = Auth.auth().currentUser?.createProfileChangeRequest()
+            changeRequest?.displayName = username
+            changeRequest?.commitChanges { error in
+                if let error = error {
+                    print("Failed to set displayName: \(error.localizedDescription)")
+                } else {
+                    print("displayName successfully set to \(username)")
+                }
+            }
 
             DispatchQueue.main.async {
                 self.performSegue(withIdentifier: self.toHomeSegueIdentifier, sender: self)

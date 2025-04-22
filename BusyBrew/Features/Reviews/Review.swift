@@ -44,22 +44,3 @@ struct Review: Codable, Identifiable {
         ]
     }
 }
-
-
-//extension Review {
-//    // empty cafe on creation
-//    static func empty(uid: String) -> Review {
-//        return
-//            Review(
-//                 uid: uid,
-//                 displayName: "",
-//                 date: "",
-//                 text: "",
-//                 wifi: 0,
-//                 cleanliness: 0,
-//                 outlets: 0,
-//                 photos: []
-//            )
-//    }
-//}
-

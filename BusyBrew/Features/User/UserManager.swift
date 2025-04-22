@@ -17,17 +17,6 @@ class UserManager {
     private let db = Firestore.firestore()
     private let documentPath = "users"
     
-//    func createUserDocument(uid: String, email: String) {
-//        
-//        let newUser = User.empty(uid: uid, email: email)
-//        
-//        do {
-//            try db.collection("users").document(uid).setData(from: newUser)
-//        }
-//        catch {
-//            print(error.localizedDescription)
-//        }
-//    }
     func createUserDocument(uid: String, email: String, displayName: String) {
         let userData: [String: Any] = [
             "uid": uid,
@@ -86,14 +75,5 @@ class UserManager {
             return nil
         }
     }
-    
-    /// ** EXAMPLE CALL for fetchUserDocument() :
-//    Task {
-//        if let user = await UserManager().fetchUserDocument() {
-//            print("User found: \(user)")
-//        } else {
-//            print("Failed to fetch user data")
-//        }
-//    }    
     
 }

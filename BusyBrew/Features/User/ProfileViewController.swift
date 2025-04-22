@@ -10,18 +10,23 @@ import Firebase
 import FirebaseAuth
 
 class ProfileViewController: UIViewController {
-    // User ID to fetch data
     var userId: String?
     let tightSpacing: [NSAttributedString.Key: Any] = [.kern: -2.0]
     var name: String?
     let currentUserUID = Auth.auth().currentUser?.uid ?? ""
     
+    private let nameLabel = UILabel()
+    private let usernameLabel = UILabel()
+    private let numFriendsLabel = UILabel()
+    private let numReviewsLabel = UILabel()
+    private let numFavsLabel = UILabel()
+
     override func viewDidLoad() {
         super.viewDidLoad()
-
         setupUI()
+        fetchProfileData()
     }
-    
+
     func setupUI() {
         view.backgroundColor = background3
         let scrollView = UIScrollView()
@@ -53,13 +58,11 @@ class ProfileViewController: UIViewController {
         nameStack.alignment = .leading
         nameStack.spacing = -1
         
-        let nameLabel = UILabel()
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.attributedText = NSAttributedString(string: name ?? "Donald Thai", attributes: tightSpacing)
         nameLabel.font = UIFont.systemFont(ofSize: 36, weight: .bold)
         nameLabel.textColor = background1
         
-        let usernameLabel = UILabel()
         usernameLabel.translatesAutoresizingMaskIntoConstraints = false
         usernameLabel.text = "@donaldthai"
         usernameLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
@@ -69,34 +72,33 @@ class ProfileViewController: UIViewController {
         nameStack.addArrangedSubview(usernameLabel)
         headerStack.addArrangedSubview(profilePic)
         headerStack.addArrangedSubview(nameStack)
-        let friendsButton: UIButton?
-        if true {
-            // TODO: ADD LOGIC TO CHECK IF FRIEND IS ADDED OR NOT
-            if true {
-                friendsButton = UIButton()
-                var config = UIButton.Configuration.filled()
-                var title = AttributedString("+ Add friends")
-                title.font = .systemFont(ofSize: 12, weight: .bold)
-                config.attributedTitle = title
-                config.baseBackgroundColor = background1Light
-                config.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
-                config.cornerStyle = .small
-                friendsButton!.configuration = config
-                
-                headerStack.addArrangedSubview(friendsButton!)
-            } else {
-                friendsButton = UIButton()
-                var config = UIButton.Configuration.filled()
-                var title = AttributedString("- Remove Friend")
-                title.font = .systemFont(ofSize: 12, weight: .bold)
-                config.attributedTitle = title
-                config.baseBackgroundColor = background1Light
-                config.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
-                config.cornerStyle = .small
-                friendsButton!.configuration = config
-                headerStack.addArrangedSubview(friendsButton!)
-            }
-        }
+        
+//        let friendsButton: UIButton?
+//        if true {
+//            if true {
+//                friendsButton = UIButton()
+//                var config = UIButton.Configuration.filled()
+//                var title = AttributedString("+ Add friends")
+//                title.font = .systemFont(ofSize: 12, weight: .bold)
+//                config.attributedTitle = title
+//                config.baseBackgroundColor = background1Light
+//                config.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
+//                config.cornerStyle = .small
+//                friendsButton!.configuration = config
+//                headerStack.addArrangedSubview(friendsButton!)
+//            } else {
+//                friendsButton = UIButton()
+//                var config = UIButton.Configuration.filled()
+//                var title = AttributedString("- Remove Friend")
+//                title.font = .systemFont(ofSize: 12, weight: .bold)
+//                config.attributedTitle = title
+//                config.baseBackgroundColor = background1Light
+//                config.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
+//                config.cornerStyle = .small
+//                friendsButton!.configuration = config
+//                headerStack.addArrangedSubview(friendsButton!)
+//            }
+//        }
         
         let rows = UIStackView()
         rows.translatesAutoresizingMaskIntoConstraints = false
@@ -113,7 +115,6 @@ class ProfileViewController: UIViewController {
         
         [favorites, friends, reviews].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
-            // Add a fixed height so they appear as “rectangles”
             $0.heightAnchor.constraint(equalToConstant: 150).isActive = true
         }
         
@@ -123,17 +124,15 @@ class ProfileViewController: UIViewController {
         friendsData.alignment = .leading
         friendsData.spacing = -4
         
-        let numFriends = UILabel()
-        numFriends.text = "50"
-        numFriends.font = UIFont.systemFont(ofSize: 60, weight: .black)
-        numFriends.textColor = .white
-        
+        numFriendsLabel.text = "50"
+        numFriendsLabel.font = UIFont.systemFont(ofSize: 60, weight: .black)
+        numFriendsLabel.textColor = .white
         let friendsLabel = UILabel()
         friendsLabel.text = "Friends"
         friendsLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
         friendsLabel.textColor = .white
         
-        friendsData.addArrangedSubview(numFriends)
+        friendsData.addArrangedSubview(numFriendsLabel)
         friendsData.addArrangedSubview(friendsLabel)
         friends.addSubview(friendsData)
         
@@ -143,17 +142,15 @@ class ProfileViewController: UIViewController {
         favoritesData.alignment = .leading
         favoritesData.spacing = -2
         
-        let numFavs = UILabel()
-        numFavs.text = "50"
-        numFavs.font = UIFont.systemFont(ofSize: 60, weight: .black)
-        numFavs.textColor = .white
-        
+        numFavsLabel.text = "50"
+        numFavsLabel.font = UIFont.systemFont(ofSize: 60, weight: .black)
+        numFavsLabel.textColor = .white
         let favsLabel = UILabel()
         favsLabel.text = "Favorites"
         favsLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
         favsLabel.textColor = .white
         
-        favoritesData.addArrangedSubview(numFavs)
+        favoritesData.addArrangedSubview(numFavsLabel)
         favoritesData.addArrangedSubview(favsLabel)
         favorites.addSubview(favoritesData)
         
@@ -163,20 +160,17 @@ class ProfileViewController: UIViewController {
         reviewsData.alignment = .leading
         reviewsData.spacing = -2
         
-        let numReviews = UILabel()
-        numReviews.text = "50"
-        numReviews.font = UIFont.systemFont(ofSize: 60, weight: .black)
-        numReviews.textColor = .white
-        
+        numReviewsLabel.text = "50"
+        numReviewsLabel.font = UIFont.systemFont(ofSize: 60, weight: .black)
+        numReviewsLabel.textColor = .white
         let reviewsLabel = UILabel()
         reviewsLabel.text = "Reviews"
         reviewsLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
         reviewsLabel.textColor = .white
         
-        reviewsData.addArrangedSubview(numReviews)
+        reviewsData.addArrangedSubview(numReviewsLabel)
         reviewsData.addArrangedSubview(reviewsLabel)
         reviews.addSubview(reviewsData)
-        
         
         let row1 = UIStackView(arrangedSubviews: [friends, reviews])
         row1.axis = .horizontal
@@ -230,6 +224,34 @@ class ProfileViewController: UIViewController {
             reviewsData.trailingAnchor.constraint(equalTo: reviews.trailingAnchor, constant: -15),
             reviewsData.centerYAnchor.constraint(equalTo: reviews.centerYAnchor),
         ])
+        
+        if userId == currentUserUID {
+          friends.isUserInteractionEnabled = true
+          friends.addGestureRecognizer(
+            UITapGestureRecognizer(
+              target: self,
+              action: #selector(openFriendsList)
+            )
+          )
+        } else {
+          friends.isUserInteractionEnabled = false
+          friends.alpha = 0.5
+        }
+        
+//        reviews.isUserInteractionEnabled = true
+//        reviews.addGestureRecognizer(
+//          UITapGestureRecognizer(
+//            target: self,
+//            action: #selector(openReviewsList)
+//          )
+//        )
+        favorites.isUserInteractionEnabled = true
+//        reviews.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(openReviewsList)))
+        favorites.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(openFavoritesList)))
+    }
+    
+    @objc func backButtonTapped() {
+        self.dismiss(animated: true)
     }
     
     func createBackButton() -> UIButton {
@@ -240,8 +262,46 @@ class ProfileViewController: UIViewController {
         backButton.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
         return backButton
     }
-
-    @objc func backButtonTapped() {
-        self.dismiss(animated: true)
+    
+    @objc private func openFriendsList() {
+        let vc = FriendsViewController()
+        vc.userId = userId ?? currentUserUID
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: true)
+    }
+    
+    @objc private func openFavoritesList() {
+        let vc = FavoritesViewController()
+        vc.userId = userId ?? currentUserUID
+        vc.modalPresentationStyle = .fullScreen
+        present(vc, animated: true)
+    }
+    
+//    @objc private func openReviewsList() {
+//      let vc = ReviewsViewController()
+//      vc.userId = userId ?? currentUserUID
+//      vc.modalPresentationStyle = .fullScreen
+//      present(vc, animated: true)
+//    }
+    
+    private func fetchProfileData() {
+        let uid = userId ?? currentUserUID
+        Firestore.firestore().collection("users").document(uid).getDocument { snapshot, _ in
+            guard let data = snapshot?.data() else { return }
+            let displayName = data["displayName"] as? String ?? ""
+            let friends = (data["friends"] as? [String])?.count ?? 0
+            let favs = (data["favorites"] as? [String])?.count ?? 0
+            let reviews = (data["reviews"] as? [String])?.count ?? 0
+            
+            DispatchQueue.main.async {
+                self.nameLabel.attributedText = NSAttributedString(string: displayName, attributes: self.tightSpacing)
+                self.usernameLabel.text = "@\(displayName.lowercased())"
+                self.numFriendsLabel.text = "\(friends)"
+                self.numFavsLabel.text = "\(favs)"
+                self.numReviewsLabel.text = "\(reviews)"
+            }
+        }
     }
 }
+
+
