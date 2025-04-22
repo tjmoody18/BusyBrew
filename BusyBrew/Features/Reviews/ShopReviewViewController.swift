@@ -21,6 +21,8 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
     let seperator = UIView()
     let cafe: Cafe
     
+    var onReviewSubmitted: (() -> Void)?
+    
     var numStarsDict: [String: Int] = [
         "Wifi":0,
         "Clean":0,
@@ -62,7 +64,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
         pageTitle.translatesAutoresizingMaskIntoConstraints = false
         pageTitle.font = UIFont.systemFont(ofSize: 35, weight: .bold)
         NSLayoutConstraint.activate([
-            pageTitle.topAnchor.constraint(equalTo: view.topAnchor, constant: 95),
+            pageTitle.topAnchor.constraint(equalTo: view.topAnchor, constant: 45),
             pageTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40)
         ])
     }
@@ -125,7 +127,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
             star.tag = i
             star.accessibilityIdentifier = rating // keep track of rating
             star.setImage(UIImage(systemName: i <= numStarsDict[rating]! ? "star.fill" : "star"), for: .normal)
-            star.tintColor = .yellow
+            star.tintColor = background2
             star.addTarget(self, action: #selector(starTapped(_:)), for: .touchUpInside)
             
             stars.addArrangedSubview(star)
@@ -247,6 +249,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
                     outlets: numStarsDict["Outlet"]!,
                     photos: [])
                 ReviewManager().createReviewDocument(forCafeId: cafe.uid, review: review)
+                self.onReviewSubmitted?()
                 self.dismiss(animated: true)
                 print("User found: \(user)")
             } else {

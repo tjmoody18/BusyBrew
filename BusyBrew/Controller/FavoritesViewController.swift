@@ -11,7 +11,7 @@ import UIKit
 
 class FavoritesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource{
     
-    var favorites: [Cafe] = [Cafe.empty(uid: "123", name: "g123456@gmail.com")]
+    var favorites: [Cafe] = []
     
     let backButton = UIButton(type: .system)
     let favoritesTable = UITableView()
@@ -25,15 +25,16 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
         setupUI()
         favoritesTable.dataSource = self
         favoritesTable.delegate = self
+        getFavorites()
+        print("check for favorites", self.favorites)
     }
     
     func setupUI() {
         view.backgroundColor = background3
         createBackButton()
         addHeaders()
-//        favoritesTable.reloadData()
+        favoritesTable.reloadData()
         setupTable()
-//        favoritesTable.reloadData()
     }
     
     func setupTable() {
@@ -110,15 +111,22 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
         return cell!
     }
     
-//    func getFavorites() {
-//        Task {
-//            if let user = await UserManager().fetchUserDocument() {
-//                self.favorites = user.favorites
-//                print("User found: \(user)")
-//            } else {
-//                print("Failed to fetch user data")
-//            }
-//        }
-//        favoritesTable.reloadData()
-//    }
+    func getFavorites() {
+        Task {
+            if let user = await UserManager().fetchUserDocument() {
+                for fav in user.favorites {
+                    print("Here user found")
+                    let cafe = await CafeManager().fetchCafeDocument(uid: fav)
+                    self.favorites.append(cafe!)
+                }
+                DispatchQueue.main.async {
+                    self.favoritesTable.reloadData()
+                }
+                print("User found: \(user)")
+            } else {
+                print("Failed to fetch user data")
+            }
+        }
+        favoritesTable.reloadData()
+    }
 }

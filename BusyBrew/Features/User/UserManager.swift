@@ -61,6 +61,14 @@ class UserManager {
         }
     }
     
+    func addFavorite(uid: String, data: String) {
+        db.collection("users").document(uid).updateData(["favorites" : FieldValue.arrayUnion([data])])
+    }
+    
+    func deleteFavorite(uid: String, data: String) {
+        db.collection("users").document(uid).updateData(["favorites" : FieldValue.arrayRemove([data])])
+    }
+    
     func fetchUserDocument() async -> User? {
         guard let user = Auth.auth().currentUser else { return nil }
         

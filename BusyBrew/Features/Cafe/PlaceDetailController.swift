@@ -24,10 +24,11 @@ class PlaceDetailViewController: UIViewController {
         let button = UIButton(type: .system)
         var config = UIButton.Configuration.filled()
         config.baseBackgroundColor = background1
-        config.title = "Join Cafe Chat"
+        var title = AttributedString("Live Chat")
+        title.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+        config.attributedTitle = title
         button.configuration = config
         button.setTitleColor(.white, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(openCafeChat), for: .touchUpInside)
         return button
@@ -57,7 +58,6 @@ class PlaceDetailViewController: UIViewController {
         let heartImage = UIImage(systemName: "heart")
         button.setImage(heartImage, for: .normal)
         button.tintColor = .systemRed
-//        button.backgroundColor = .red
         button.translatesAutoresizingMaskIntoConstraints = false
         button.layer.cornerRadius = 4
         return button
@@ -68,6 +68,7 @@ class PlaceDetailViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .left
         label.font = UIFont.systemFont(ofSize: 12, weight: .regular)
+        label.alpha = 0.4
         label.alpha = 0.4
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
@@ -91,6 +92,7 @@ class PlaceDetailViewController: UIViewController {
         cafeImage.contentMode = .scaleToFill
         cafeImage.contentMode = .scaleAspectFill
         cafeImage.translatesAutoresizingMaskIntoConstraints = false
+        cafeImage.clipsToBounds = true
         return cafeImage
     }()
     
@@ -163,6 +165,8 @@ class PlaceDetailViewController: UIViewController {
                                     }.resume()
                                 }
                             }
+                            
+                            
                         }
                     }
                 }
@@ -173,6 +177,8 @@ class PlaceDetailViewController: UIViewController {
                 }
             }
         }
+
+        print("fav is ", isFavorite)
     }
     
     func fetchPlaceIDFromGoogle(name: String, latitude: Double, longitude: Double, completion: @escaping (String?) -> Void) {
@@ -241,8 +247,14 @@ class PlaceDetailViewController: UIViewController {
                 print("Cafe found: \(cafe)")
                 print("CAFE STATUS: \(cafe.status)")
                 
+                let favFlag = user?.favorites.contains(self.cafe?.uid ?? "") ?? false
+                
                 DispatchQueue.main.async {
                     self.setupUI()
+                    self.isFavorite = favFlag
+                    if self.isFavorite {
+                        self.favButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
+                    }
                 }
                 
             } else {
@@ -251,12 +263,12 @@ class PlaceDetailViewController: UIViewController {
                 let newCafe = Cafe.empty(uid: place.placeId, name: place.name)
                 CafeManager().createCafeDocument(cafe: newCafe)
                 
+                
                 // set up ui after cafe is fetched and set (or created if not found)
                 DispatchQueue.main.async {
                     self.cafe = newCafe
                     self.setupUI()
                 }
-                
             }
             
             
@@ -276,10 +288,10 @@ class PlaceDetailViewController: UIViewController {
         
 //        add this cafe to the 
         if isFavorite {
-            
+            UserManager().addFavorite(uid: user!.uid, data: cafe!.uid)
         }
         else {
-            
+            UserManager().deleteFavorite(uid: user!.uid, data: cafe!.uid)
         }
     }
     
@@ -317,6 +329,18 @@ class PlaceDetailViewController: UIViewController {
     
     @objc func addReviewButtonTapped(_ sender: UIButton) {
         let reviewVC = ShopReviewViewController(cafe: cafe!)
+        
+        reviewVC.onReviewSubmitted = { [weak self] in
+            Task {
+                guard let self = self else { return }
+                guard let cafe = self.cafe else { return }
+                self.reviews = await ReviewManager().fetchAllReviews(forCafeId: cafe.uid)
+                DispatchQueue.main.async {
+                    self.setupUI()
+                }
+            }
+        }
+        
         present(reviewVC, animated: true)
     }
     
@@ -545,13 +569,14 @@ class PlaceDetailViewController: UIViewController {
             chatButton.topAnchor.constraint(equalTo: reportStatusButton.bottomAnchor, constant: 10),
             chatButton.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
             chatButton.trailingAnchor.constraint(equalTo: topSection.trailingAnchor),
-            chatButton.heightAnchor.constraint(equalToConstant: 40)
+//            chatButton.heightAnchor.constraint(equalToConstant: 40)
         ])
 
         
         cafeImage.heightAnchor.constraint(equalToConstant: 150).isActive = true
         cafeImage.widthAnchor.constraint(equalTo: topSection.widthAnchor).isActive = true
         
+        favButton.addTarget(self, action: #selector(favButtonTapped), for: .touchUpInside)
         // REVIEWS
         let reviewSection = UIStackView()
         reviewSection.translatesAutoresizingMaskIntoConstraints = false
@@ -583,9 +608,7 @@ class PlaceDetailViewController: UIViewController {
         ]
         addReviewButton.setAttributedTitle(NSAttributedString(string: "+ Add your own", attributes: underlined), for: .normal)
         addReviewButton.translatesAutoresizingMaskIntoConstraints = false
-    
         addReviewButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
-  
         
         reviewTitleAndButton.addArrangedSubview(reviewTitle)
         reviewTitleAndButton.addArrangedSubview(addReviewButton)
@@ -678,7 +701,7 @@ class PlaceDetailViewController: UIViewController {
             cafeImage.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
             cafeImage.trailingAnchor.constraint(equalTo: topSection.trailingAnchor),
             cafeImage.topAnchor.constraint(equalTo: contactStackView.bottomAnchor, constant: 10),
-//            cafeImage.heightAnchor.constraint(equalToConstant: 15)
+            cafeImage.heightAnchor.constraint(equalToConstant: 150)
         ])
 
         
@@ -696,7 +719,7 @@ class PlaceDetailViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             ratingView.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
-            ratingView.topAnchor.constraint(equalTo: reportStatusButton.bottomAnchor, constant: 15),
+            ratingView.topAnchor.constraint(equalTo: chatButton.bottomAnchor, constant: 15),
             
             overallRating.topAnchor.constraint(equalTo: ratingLabel.bottomAnchor, constant: 1),
             
