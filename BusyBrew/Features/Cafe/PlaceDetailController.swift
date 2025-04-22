@@ -12,8 +12,8 @@ class PlaceDetailViewController: UIViewController {
     var user: User?
     var isFavorite: Bool = false
     var cafe: Cafe?
+//    var currentStatus: String
     let place: PlaceAnnotation
-    let currentStatus = "MODERATELY BUSY"
     let rating = 5.0
     let categories = ["wifi quality", "cleanliness", "outlets availability"]
     let reviews = [
@@ -30,6 +30,14 @@ class PlaceDetailViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .left
         label.font = UIFont.systemFont(ofSize: 48, weight: .bold)
+        return label
+    }()
+    
+    lazy var status: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textColor = background2
         return label
     }()
     
@@ -126,7 +134,7 @@ class PlaceDetailViewController: UIViewController {
                                 self.nameLabel.text = newName
                             }
                             
-                            self.setupUI()
+//                            self.setupUI()
 
                             if let photos = details["photos"] as? [[String: Any]],
                                let photoRef = photos.first?["photo_reference"] as? String {
@@ -219,11 +227,24 @@ class PlaceDetailViewController: UIViewController {
             if let cafe = await CafeManager().fetchCafeDocument(uid: place.placeId) {
                 self.cafe = cafe
                 print("Cafe found: \(cafe)")
+                print("CAFE STATUS: \(cafe.status)")
+                
+                DispatchQueue.main.async {
+                    self.setupUI()
+                }
+                
             } else {
                 print("Failed to fetch cafe data")
                 print("Creating document")
                 let newCafe = Cafe.empty(uid: place.placeId, name: place.name)
                 CafeManager().createCafeDocument(cafe: newCafe)
+                
+                // set up ui after cafe is fetched and set (or created if not found)
+                DispatchQueue.main.async {
+                    self.cafe = newCafe
+                    self.setupUI()
+                }
+                
             }
             
             for review in reviews {
@@ -262,10 +283,42 @@ class PlaceDetailViewController: UIViewController {
         UIApplication.shared.open(url)
     }
     
+    @objc func reportStatusButtonTapped(_ sender: UIButton) {
+        let controller = UIAlertController(
+            title: "Report Current Status",
+            message: place.name,
+            preferredStyle: .actionSheet)
+        
+        controller.addAction(UIAlertAction(title: "Cancel", style: .cancel)
+                             { (action) in print("Cancel")} )
+        controller.addAction(UIAlertAction(title: "Extremely Busy", style: .default)
+                             { (action) in self.submitStatus(status: "Extremely Busy")} )
+        controller.addAction(UIAlertAction(title: "Very Busy", style: .default)
+                             { (action) in self.submitStatus(status: "Very Busy")} )
+        controller.addAction(UIAlertAction(title: "Moderately Busy", style: .default)
+                             { (action) in self.submitStatus(status: "Moderately Busy")} )
+        controller.addAction(UIAlertAction(title: "Not Busy", style: .default)
+                             { (action) in self.submitStatus(status: "Not Busy")} )
+
+             present(controller, animated: true)
+    }
+    
+    
+    
     @objc func addReviewButtonTapped(_ sender: UIButton) {
         let reviewVC = ShopReviewViewController()
         present(reviewVC, animated: true)
     }
+    
+    func submitStatus(status: String) {
+        print("\(status) reported")
+        CafeManager().updateDocument(uid: place.placeId, data: ["status": status])
+        self.cafe?.status = status
+        self.status.text = status
+        print("CAFE: \(String(describing: cafe))")
+//        self.currentStatus = status
+    }
+    
     
     
     
@@ -394,18 +447,18 @@ class PlaceDetailViewController: UIViewController {
         // contactStackView.addArrangedSubview(addressLabel)
         contactStackView.addArrangedSubview(directionsButton)
         
-        directionsButton.addTarget(self, action: #selector(directionsButtonTapped), for: .touchUpInside)
+//        directionsButton.addTarget(self, action: #selector(directionsButtonTapped), for: .touchUpInside)
         
+        /// #STATUS LABEL
         let statusLabel = UILabel()
         statusLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         statusLabel.attributedText = NSAttributedString(string: "current status:", attributes: lesserSpacing)
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        let status = UILabel()
-        status.font = UIFont.systemFont(ofSize: 18, weight: .bold)
-        status.attributedText = NSAttributedString(string: currentStatus, attributes: lesserSpacing)
-        status.translatesAutoresizingMaskIntoConstraints = false
-        status.textColor = background2
+        
+        print("CAFE: \(String(describing: cafe))")
+        print("STATUS: \(String(describing: cafe?.status))")
+        status.attributedText = NSAttributedString(string: cafe?.status ?? "NO STATUS REPORTED", attributes: lesserSpacing)
         
         let ratingView = UIView()
         ratingView.translatesAutoresizingMaskIntoConstraints = false
@@ -515,9 +568,7 @@ class PlaceDetailViewController: UIViewController {
         addReviewButton.translatesAutoresizingMaskIntoConstraints = false
     
         addReviewButton.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
-        
-        // Review button tapped event handler
-        addReviewButton.addTarget(self, action: #selector(addReviewButtonTapped), for: .touchUpInside)
+  
         
         reviewTitleAndButton.addArrangedSubview(reviewTitle)
         reviewTitleAndButton.addArrangedSubview(addReviewButton)
@@ -565,6 +616,11 @@ class PlaceDetailViewController: UIViewController {
             }
             count += 1
         }
+        
+        // EVENT HANDLERS
+        directionsButton.addTarget(self, action: #selector(directionsButtonTapped), for: .touchUpInside)
+        reportStatusButton.addTarget(self, action: #selector(reportStatusButtonTapped), for: .touchUpInside)
+        addReviewButton.addTarget(self, action: #selector(addReviewButtonTapped), for: .touchUpInside)
         
         // CONSTRAINTS
         NSLayoutConstraint.activate([
