@@ -126,7 +126,7 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         // center map button right below menuButton
         centerMapButton.topAnchor.constraint(equalTo: menuButton.bottomAnchor, constant: 20).isActive = true
         centerMapButton.heightAnchor.constraint(equalToConstant: 45).isActive = true
-        centerMapButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20).isActive = true
+        centerMapButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40).isActive = true
         centerMapButton.widthAnchor.constraint(equalToConstant: 45).isActive = true
         
         

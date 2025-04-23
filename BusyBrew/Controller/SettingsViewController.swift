@@ -23,6 +23,7 @@ class SettingsViewController: UIViewController {
     var phoneTextField = UITextField()
     var notificationsToggle = UIButton()
     
+    var user: User?
     var username = "Dummy username"
     var password = "123456"
     var email = "d@gmail.com"
@@ -35,6 +36,26 @@ class SettingsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        Task {
+            if let user = await UserManager().fetchUserDocument() {
+                self.user = user
+                print("user has been set and  found: \(user)")
+                DispatchQueue.main.async {
+                    self.username = self.user!.displayName
+                    self.userTextField.text = self.username
+                    self.email = self.user!.email
+                    self.emailTextField.text = self.email
+                }
+            } else {
+                print("Failed to fetch user data")
+            }
+        }
+        if var phone = Auth.auth().currentUser?.phoneNumber
+        {
+            print("User’s phone number is \(phone)")
+        } else {
+            print("No phone number on Auth user; they didn’t sign in with Phone Auth.")
+        }
     }
 
     func setupUI() {
@@ -239,6 +260,8 @@ class SettingsViewController: UIViewController {
         editSaveButton.backgroundColor = newBG
         
         let textFields = [userTextField, passwordTextField, emailTextField, phoneTextField]
+        let fields = [userTextField: "displayName", passwordTextField: "password", emailTextField: "email", phoneTextField: "phone"]
+        
         for tf in textFields {
             tf.isEnabled.toggle()
             if isEditing {
@@ -248,6 +271,23 @@ class SettingsViewController: UIViewController {
                 tf.leftViewMode = .always
                 // TODO: SAVE INFO IF DONE EDITING
             } else {
+                if tf != passwordTextField {
+                    UserManager().updateDocument(uid: self.user!.uid, data: [fields[tf]! : tf.text])
+                }
+                if tf == passwordTextField {
+                    if tf.text != password {
+                        Auth.auth().currentUser?.updatePassword(to:tf.text!) {err in
+                            if let err = err {
+                                  print("password update failed:", err)
+                                } else {
+                                  print("password updated success")
+                                }
+                        }
+                    }
+                }
+//                if tf == emailTextField && tf.text != nil{
+//                    Auth.auth().currentUser?.updateEmail(to: tf.text!)
+//                }
                 tf.leftViewMode = .never
                 tf.backgroundColor = .clear
             }
