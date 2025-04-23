@@ -33,7 +33,6 @@ class PlaceDetailViewController: UIViewController {
         button.addTarget(self, action: #selector(openCafeChat), for: .touchUpInside)
         return button
     }()
-
     
     lazy var nameLabel: UILabel = {
         let label = UILabel()
@@ -160,6 +159,7 @@ class PlaceDetailViewController: UIViewController {
                                         if let data = data, let image = UIImage(data: data) {
                                             DispatchQueue.main.async {
                                                 self.cafeImage.image = image
+                                                CafeManager().updateDocument(uid: self.place.placeId, data: ["image": photoURL.absoluteString])
                                             }
                                         }
                                     }.resume()
@@ -248,7 +248,6 @@ class PlaceDetailViewController: UIViewController {
                 print("CAFE STATUS: \(cafe.status)")
                 
                 let favFlag = user?.favorites.contains(self.cafe?.uid ?? "") ?? false
-                
                 DispatchQueue.main.async {
                     self.setupUI()
                     self.isFavorite = favFlag
@@ -270,9 +269,6 @@ class PlaceDetailViewController: UIViewController {
                     self.setupUI()
                 }
             }
-            
-            
-            
         }
     }
 

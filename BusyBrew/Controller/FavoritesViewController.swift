@@ -44,7 +44,7 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
         view.addSubview(favoritesTable)
         
         NSLayoutConstraint.activate([
-            favoritesTable.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 25),
+            favoritesTable.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 5),
             favoritesTable.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             favoritesTable.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             favoritesTable.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -108,7 +108,17 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
             for: indexPath
         ) as! FavoriteTableViewCell
         let cafeFavorite = favorites[indexPath.row]
-        cell.cafeImage.image = UIImage(named: cafeFavorite.image)
+        if let photoURL = URL(string: cafeFavorite.image) {
+            URLSession.shared.dataTask(with: photoURL) { data, response, error in
+                if let data = data, let image = UIImage(data: data) {
+                    DispatchQueue.main.async {
+                        if let updateCell = tableView.cellForRow(at: indexPath) as? FavoriteTableViewCell {
+                              updateCell.cafeImage.image = image
+                            }
+                    }
+                }
+            }.resume()
+        }
         cell.nameLabel.text = cafeFavorite.name
         cell.statusLabel.text = cafeFavorite.status
         return cell

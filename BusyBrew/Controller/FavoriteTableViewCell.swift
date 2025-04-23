@@ -47,19 +47,20 @@ class FavoriteTableViewCell: UITableViewCell {
         contentView.addSubview(heartIcon)
         
         NSLayoutConstraint.activate([
-            statusLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            statusLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 25),
             statusLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 30),
 
-            nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 25),
+            nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 40),
             nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 30),
             
-            heartIcon.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 25),
+            heartIcon.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 40),
             heartIcon.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -30),
             
-            cafeImage.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 60),
             cafeImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 30),
-            cafeImage.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            cafeImage.centerXAnchor.constraint(equalTo: contentView.centerXAnchor)
+            cafeImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -30),
+            cafeImage.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 8),
+            cafeImage.heightAnchor.constraint(equalToConstant: 180),
+            cafeImage.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
      
     }
