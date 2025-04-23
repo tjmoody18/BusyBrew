@@ -81,9 +81,13 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        NotificationManager().requestNotificationPermissions()
+        
         Task {
             if let user = await UserManager().fetchUserDocument() {
                 print("User found: \(user)")
+                    NotificationManager().listenForStatusChange(favorites: user.favorites)
+                
             } else {
                 print("Failed to fetch user data")
             }

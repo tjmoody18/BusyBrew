@@ -282,9 +282,10 @@ class PlaceDetailViewController: UIViewController {
         let heartImg = isFavorite ? UIImage(systemName: "heart.fill") : UIImage(systemName: "heart")
         favButton.setImage(heartImg, for: .normal)
         
-//        add this cafe to the 
+//        add this cafe to the favorites
         if isFavorite {
             UserManager().addFavorite(uid: user!.uid, data: cafe!.uid)
+            NotificationManager().listenForStatusChange(favorites: [cafe!.uid])
         }
         else {
             UserManager().deleteFavorite(uid: user!.uid, data: cafe!.uid)
