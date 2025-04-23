@@ -347,6 +347,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
         let controller = UIAlertController(title:"Media Controller", message: "Add media", preferredStyle: .actionSheet)
         controller.addAction(UIAlertAction(title:"Take New Photo", style: .default) {_ in self.openCamera()})
         controller.addAction(UIAlertAction(title:"Choose Existing", style: .default) {_ in self.openLibrary()})
+        controller.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(controller, animated: true)
     }
     
