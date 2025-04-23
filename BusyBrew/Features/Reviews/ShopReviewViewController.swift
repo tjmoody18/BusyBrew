@@ -449,9 +449,11 @@ extension ShopReviewViewController: UIImagePickerControllerDelegate, UINavigatio
     
     @objc func removeImage(_ sender: UIButton) {
         let index = sender.tag
-        guard index >= 0 && index < selectedImages.count else { return }
-        selectedImages.remove(at: index)
-        imagePreviewStack?.arrangedSubviews[index].removeFromSuperview()
+        guard let stack = imagePreviewStack, index >= 0 && index < stack.arrangedSubviews.count else { return }
+        stack.arrangedSubviews[index].removeFromSuperview()
+        selectedImages = stack.arrangedSubviews.compactMap {
+            ($0.subviews.first as? UIImageView)?.image
+        }
         updatePhotoCountLabel()
     }
     
