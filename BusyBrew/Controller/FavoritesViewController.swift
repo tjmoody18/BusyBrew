@@ -14,6 +14,12 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
     var favorites: [Cafe] = []
     var userId: String?
     
+    let busyColorCode: [String: UIColor] = [
+        "Not Busy": .green,
+        "Moderately Busy": .yellow,
+        "Very Busy": .orange,
+        "Extremely Busy": .red
+    ]
     let backButton = UIButton(type: .system)
     let favoritesTable = UITableView()
     let favoritesLabel = UILabel()
@@ -114,6 +120,7 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
                     DispatchQueue.main.async {
                         if let updateCell = tableView.cellForRow(at: indexPath) as? FavoriteTableViewCell {
                               updateCell.cafeImage.image = image
+                            updateCell.statusLabel.textColor = self.busyColorCode[cafeFavorite.status]
                             }
                     }
                 }
