@@ -53,12 +53,13 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
     
     func setupUI() {
         view.backgroundColor = background3
-//        let backButton = createBackButton()
-//        view.addSubview(backButton)
-//        NSLayoutConstraint.activate([
-//            backButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 60),
-//            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40)
-//        ])
+        let backButton = createBackButton()
+        backButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(backButton)
+        NSLayoutConstraint.activate([
+            backButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 60),
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40)
+        ])
         titleSection()
         reviewSection()
         seperatorSection()

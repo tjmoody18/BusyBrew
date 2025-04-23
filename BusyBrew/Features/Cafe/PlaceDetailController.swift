@@ -24,6 +24,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         let button = UIButton(type: .system)
         var config = UIButton.Configuration.filled()
         config.baseBackgroundColor = background1
+        
         var title = AttributedString("Live Chat")
         title.font = UIFont.systemFont(ofSize: 14, weight: .bold)
         config.attributedTitle = title
@@ -253,6 +254,20 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
             if let cafe = await CafeManager().fetchCafeDocument(uid: place.placeId) {
                 self.cafe = cafe
                 self.reviews = await ReviewManager().fetchAllReviews(forCafeId: cafe.uid)
+                
+                let count = Double(self.reviews.count)
+                if count > 0 {
+                  let wifiAvg  = self.reviews.map { Double($0.wifi) }.reduce(0,+)/count
+                  let cleanAvg = self.reviews.map { Double($0.cleanliness) }.reduce(0,+)/count
+                  let outAvg   = self.reviews.map { Double($0.outlets) }.reduce(0,+)/count
+                  self.rating  = (wifiAvg + cleanAvg + outAvg) / 3
+                } else {
+                  self.rating = 0
+                }
+                self.overallRating.text = String(format: "%.1f", self.rating)
+                self.numReviews.text    = "\(self.reviews.count) reviews"
+                self.reviewsTable.reloadData()
+                
                 print("Cafe found: \(cafe)")
                 print("CAFE STATUS: \(cafe.status)")
                 status.text = cafe.status
@@ -312,6 +327,27 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         }
         UIApplication.shared.open(url)
     }
+    
+    private func updateRatingsFromReviews() {
+      guard !reviews.isEmpty else {
+        overallRating.text = "No reviews"
+        return
+      }
+      
+      let totalWifi        = reviews.reduce(0) { $0 + $1.wifi }
+      let totalCleanliness = reviews.reduce(0) { $0 + $1.cleanliness }
+      let totalOutlets     = reviews.reduce(0) { $0 + $1.outlets }
+      let count = Double(reviews.count)
+      
+      let avgWifi        = Double(totalWifi) / count
+      let avgCleanliness = Double(totalCleanliness) / count
+      let avgOutlets     = Double(totalOutlets) / count
+      
+      let overallAvg = (avgWifi + avgCleanliness + avgOutlets) / 3.0
+      
+      overallRating.text = String(format: "%.1f", overallAvg)
+    }
+
     
     @objc func reportStatusButtonTapped(_ sender: UIButton) {
         let controller = UIAlertController(
