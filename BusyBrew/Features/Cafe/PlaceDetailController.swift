@@ -333,6 +333,9 @@ class PlaceDetailViewController: UIViewController {
                 guard let cafe = self.cafe else { return }
                 self.reviews = await ReviewManager().fetchAllReviews(forCafeId: cafe.uid)
                 DispatchQueue.main.async {
+                    // remove subviews
+                    self.view.subviews.forEach { $0.removeFromSuperview() }
+                    // replace with updated UI
                     self.setupUI()
                 }
             }
