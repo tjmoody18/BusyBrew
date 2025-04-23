@@ -10,13 +10,13 @@ import UIKit
 import FirebaseAuth
 import FirebaseFirestore
 
-class PlaceDetailViewController: UIViewController {
+class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     var user: User?
     var isFavorite: Bool = false
     var cafe: Cafe?
 //    var currentStatus: String
     let place: PlaceAnnotation
-    let rating = 5.0
+    var rating = 5.0
     let categories = ["wifi quality", "cleanliness", "outlets availability"]
     var reviews = [] as [Review]
     
@@ -115,7 +115,9 @@ class PlaceDetailViewController: UIViewController {
         return label
     }()
     
-    
+    let reviewsCellIdentifier = "ReviewsTableViewCellIdentifier"
+    let reviewsTable = UITableView()
+    let numReviews = UILabel()
     
     init(place: PlaceAnnotation) {
         self.place = place
@@ -126,8 +128,15 @@ class PlaceDetailViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        reviewsTable.dataSource = self
+        reviewsTable.delegate = self
+        reviewsTable.register(ReviewsTableViewCell.self, forCellReuseIdentifier: reviewsCellIdentifier)
         view.backgroundColor = .systemBackground
-        
+        setupUI()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         let name = place.name
         let coordinate = place.location.coordinate
         fetchPlaceIDFromGoogle(name: name, latitude: coordinate.latitude, longitude: coordinate.longitude) { placeID in
@@ -135,12 +144,14 @@ class PlaceDetailViewController: UIViewController {
                 self.fetchPlaceDetails(placeID: placeID) { details in
                     if let details = details {
                         DispatchQueue.main.async {
+                            self.reviewsTable.reloadData()
                             print("api details: \(details)")
                             if let address = details["formatted_address"] as? String {
                                 self.addressLabel.text = address
                             }
-                            if let rating = details["rating"] as? Double {
-                                self.overallRating.text = String(format: "%.1f", rating)
+                            if let testRating = details["rating"] as? Double {
+                                self.rating = testRating
+                                self.overallRating.text = String(format: "%.1f", self.rating)
                             }
                             if let newName = details["name"] as? String {
                                 self.nameLabel.text = newName
@@ -173,12 +184,10 @@ class PlaceDetailViewController: UIViewController {
             } else {
                 print("no placeID found")
                 DispatchQueue.main.async {
-                    self.setupUI() // fallback setup even if API fails
+//                    self.setupUI() // fallback setup even if API fails
                 }
             }
         }
-
-        print("fav is ", isFavorite)
     }
     
     func fetchPlaceIDFromGoogle(name: String, latitude: Double, longitude: Double, completion: @escaping (String?) -> Void) {
@@ -246,10 +255,12 @@ class PlaceDetailViewController: UIViewController {
                 self.reviews = await ReviewManager().fetchAllReviews(forCafeId: cafe.uid)
                 print("Cafe found: \(cafe)")
                 print("CAFE STATUS: \(cafe.status)")
-                
+                status.text = cafe.status
+                numReviews.text = "\(reviews.count) reviews"
+                reviewsTable.reloadData()
                 let favFlag = user?.favorites.contains(self.cafe?.uid ?? "") ?? false
                 DispatchQueue.main.async {
-                    self.setupUI()
+//                    self.setupUI()
                     self.isFavorite = favFlag
                     if self.isFavorite {
                         self.favButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
@@ -266,7 +277,7 @@ class PlaceDetailViewController: UIViewController {
                 // set up ui after cafe is fetched and set (or created if not found)
                 DispatchQueue.main.async {
                     self.cafe = newCafe
-                    self.setupUI()
+//                    self.setupUI()
                 }
             }
         }
@@ -337,10 +348,11 @@ class PlaceDetailViewController: UIViewController {
                     self.view.subviews.forEach { $0.removeFromSuperview() }
                     // replace with updated UI
                     self.setupUI()
+                    self.reviewsTable.reloadData()
                 }
             }
         }
-        
+        reviewVC.modalPresentationStyle = .fullScreen
         present(reviewVC, animated: true)
     }
     
@@ -578,16 +590,16 @@ class PlaceDetailViewController: UIViewController {
         
         favButton.addTarget(self, action: #selector(favButtonTapped), for: .touchUpInside)
         // REVIEWS
-        let reviewSection = UIStackView()
-        reviewSection.translatesAutoresizingMaskIntoConstraints = false
-        reviewSection.axis = .vertical
-        contentBody.addArrangedSubview(reviewSection)
+//        let reviewSection = UIView()
+//        reviewSection.translatesAutoresizingMaskIntoConstraints = false
+//        reviewSection.axis = .vertical
+//        contentBody.addArrangedSubview(reviewSection)
         
         let reviewBody = UIStackView()
         reviewBody.translatesAutoresizingMaskIntoConstraints = false
         reviewBody.axis = .vertical
         reviewBody.spacing = 10
-        reviewSection.addArrangedSubview(reviewBody)
+        contentBody.addArrangedSubview(reviewBody)
         
         // Review title and add review button
         let reviewTitleAndButton = UIStackView()
@@ -614,48 +626,17 @@ class PlaceDetailViewController: UIViewController {
         reviewTitleAndButton.addArrangedSubview(addReviewButton)
         reviewBody.addArrangedSubview(reviewTitleAndButton)
         
-        let numReviews = UILabel()
         numReviews.attributedText = NSAttributedString(string: "\(reviews.count) reviews", attributes: lesserSpacing)
         numReviews.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
         numReviews.textColor = grayText
         numReviews.translatesAutoresizingMaskIntoConstraints = false
         reviewBody.addArrangedSubview(numReviews)
         
-        let reviewDisplay = UIStackView()
-        reviewDisplay.axis = .vertical
-        reviewDisplay.translatesAutoresizingMaskIntoConstraints = false
-        reviewDisplay.spacing = 20
-        reviewBody.addArrangedSubview(reviewDisplay)
-        
-        // Show all reviews
-        var lastReview: UIView? = nil
-        var count = 0
-        for review in reviews {
-            let r = reviewItem(review: review)
-            reviewDisplay.addArrangedSubview(r)
-            NSLayoutConstraint.activate([
-                r.leadingAnchor.constraint(equalTo: reviewDisplay.leadingAnchor),
-                r.trailingAnchor.constraint(equalTo: reviewDisplay.trailingAnchor),
-            ])
-            if let lastReview = lastReview {
-                r.topAnchor.constraint(equalTo: lastReview.bottomAnchor, constant: 20).isActive = true
-            } else {
-                r.topAnchor.constraint(equalTo: reviewDisplay.topAnchor, constant: 10).isActive = true
-            }
-            
-            lastReview = r
-            
-            if count != reviews.count - 1 {
-                let separator = createSeparator()
-                NSLayoutConstraint.activate([
-                    separator.leadingAnchor.constraint(equalTo: r.leadingAnchor),
-                    separator.trailingAnchor.constraint(equalTo: r.trailingAnchor),
-                    separator.topAnchor.constraint(equalTo: r.bottomAnchor, constant: 10),
-                    separator.heightAnchor.constraint(equalToConstant: 2)
-                ])
-            }
-            count += 1
-        }
+        reviewsTable.translatesAutoresizingMaskIntoConstraints = false
+        reviewsTable.backgroundColor = background3
+        reviewsTable.estimatedRowHeight = 200
+        reviewsTable.rowHeight = UITableView.automaticDimension
+        contentBody.addArrangedSubview(reviewsTable)
         
         // EVENT HANDLERS
         directionsButton.addTarget(self, action: #selector(directionsButtonTapped), for: .touchUpInside)
@@ -664,17 +645,17 @@ class PlaceDetailViewController: UIViewController {
         
         // CONSTRAINTS
         NSLayoutConstraint.activate([
-            contentBody.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            contentBody.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentBody.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            contentBody.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentBody.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+            contentBody.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 50),
+            contentBody.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 40),
+            contentBody.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -40),
+            contentBody.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -80),
+            contentBody.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor)
         ])
 
         NSLayoutConstraint.activate([
-            topSection.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 40),
-            topSection.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -40),
-            topSection.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 50),
+            topSection.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor),
+            topSection.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor),
+            topSection.topAnchor.constraint(equalTo: contentBody.topAnchor),
         ])
         
         // Cafe Name Contraints
@@ -737,37 +718,52 @@ class PlaceDetailViewController: UIViewController {
         ])
 
         NSLayoutConstraint.activate([
-            reviewSection.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor),
-            reviewSection.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor),
-            reviewSection.topAnchor.constraint(equalTo: topSection.bottomAnchor)
+            reviewBody.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
+            reviewBody.trailingAnchor.constraint(equalTo: topSection.trailingAnchor),
+            reviewBody.topAnchor.constraint(equalTo: topSection.bottomAnchor)
+        ])
+        
+//        NSLayoutConstraint.activate([
+//            reviewBody.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor, constant: 40),
+//            reviewBody.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor, constant: -40),
+//            reviewBody.topAnchor.constraint(equalTo: reviewSection.topAnchor, constant: 35),
+//        ])
+        
+        NSLayoutConstraint.activate([
+//            reviewTitleAndButton.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
+//            reviewTitleAndButton.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor)
+            reviewTitleAndButton.widthAnchor.constraint(equalTo: reviewBody.widthAnchor)
         ])
         
         NSLayoutConstraint.activate([
-            reviewBody.leadingAnchor.constraint(equalTo: reviewSection.leadingAnchor, constant: 40),
-            reviewBody.trailingAnchor.constraint(equalTo: reviewSection.trailingAnchor, constant: -40),
-            reviewBody.topAnchor.constraint(equalTo: reviewSection.topAnchor, constant: 35),
-        ])
-        
-        NSLayoutConstraint.activate([
-            reviewTitleAndButton.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
-            reviewTitleAndButton.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor)
-        ])
-        
-        NSLayoutConstraint.activate([
-            numReviews.topAnchor.constraint(equalTo: reviewTitleAndButton.bottomAnchor, constant: 20),
+//            numReviews.topAnchor.constraint(equalTo: reviewTitleAndButton.bottomAnchor, constant: 20),
             numReviews.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
             numReviews.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor),
         ])
         
         NSLayoutConstraint.activate([
-            reviewDisplay.topAnchor.constraint(equalTo: numReviews.bottomAnchor, constant: 5),
-            reviewDisplay.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
-            reviewDisplay.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor),
+//            reviewDisplay.topAnchor.constraint(equalTo: numReviews.bottomAnchor, constant: 5),
+//            reviewDisplay.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
+//            reviewDisplay.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor),
+            
+            reviewsTable.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
+            reviewsTable.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor),
+            reviewsTable.topAnchor.constraint(equalTo: numReviews.bottomAnchor, constant: 20),
+            reviewsTable.heightAnchor.constraint(greaterThanOrEqualToConstant: 500)
         ])
         
-        view.layoutIfNeeded()
-        print()
-        print("ScrollView content size: \(scrollView.contentSize)")
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        print(reviews.count)
+        return reviews.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = reviewsTable.dequeueReusableCell(withIdentifier: reviewsCellIdentifier, for: indexPath) as! ReviewsTableViewCell
+        let review = reviews[indexPath.row]
+        cell.review = Review(uid: review.uid, displayName: review.displayName, date: review.date, text: review.text, wifi: review.wifi, cleanliness: review.cleanliness, outlets: review.outlets, photos: review.photos)
+        return cell
     }
 }
 

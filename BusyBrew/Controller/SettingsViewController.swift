@@ -21,11 +21,14 @@ class SettingsViewController: UIViewController {
     var passwordTextField = UITextField()
     var emailTextField = UITextField()
     var phoneTextField = UITextField()
+    var notificationsToggle = UIButton()
     
     var username = "Dummy username"
     var password = "123456"
     var email = "d@gmail.com"
     var phone = "1234567890"
+    
+    var isNotiEnabled = false
     
     let logoutSegueIdentifier = "LogoutSegue"
     
@@ -127,6 +130,22 @@ class SettingsViewController: UIViewController {
         signoutButton.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .bold)
         signoutButton.addTarget(self, action: #selector(signout), for: .touchUpInside)
         
+        let notificationsTitle = UILabel()
+        notificationsTitle.translatesAutoresizingMaskIntoConstraints = false
+        notificationsTitle.attributedText = NSAttributedString(string: "Notifications", attributes: tightSpacing)
+        notificationsTitle.font = UIFont.systemFont(ofSize: 28, weight: .bold)
+        notificationsTitle.textColor = background1
+        
+        let notiTitle = isNotiEnabled ? "Disable Notifications" : "Enable Notifications"
+        let notiColor = isNotiEnabled ? darkRed : background1Light
+        notificationsToggle.setTitle(notiTitle, for: .normal)
+        notificationsToggle.translatesAutoresizingMaskIntoConstraints = false
+        notificationsToggle.backgroundColor = notiColor
+        notificationsToggle.setTitleColor(.white, for: .normal)
+        notificationsToggle.layer.cornerRadius = 5
+        notificationsToggle.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+        notificationsToggle.addTarget(self, action: #selector(toggleNotification), for: .touchUpInside)
+        
         view.addSubview(contentBody)
         contentBody.addSubview(backButton)
         contentBody.addSubview(titleStack)
@@ -140,6 +159,8 @@ class SettingsViewController: UIViewController {
         contentBody.addSubview(phoneTitle)
         contentBody.addSubview(phoneTextField)
         contentBody.addSubview(signoutButton)
+        contentBody.addSubview(notificationsTitle)
+        contentBody.addSubview(notificationsToggle)
         
         
         NSLayoutConstraint.activate([
@@ -197,7 +218,16 @@ class SettingsViewController: UIViewController {
             signoutButton.bottomAnchor.constraint(equalTo: contentBody.bottomAnchor, constant: -10),
             signoutButton.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor),
             signoutButton.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor),
-            signoutButton.heightAnchor.constraint(equalToConstant: 40)
+            signoutButton.heightAnchor.constraint(equalToConstant: 40),
+            
+            notificationsTitle.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor),
+            notificationsTitle.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor),
+            notificationsTitle.topAnchor.constraint(equalTo: phoneTextField.bottomAnchor, constant: 20),
+            
+            notificationsToggle.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor),
+            notificationsToggle.topAnchor.constraint(equalTo: notificationsTitle.bottomAnchor, constant: 10),
+            notificationsToggle.widthAnchor.constraint(equalToConstant: 200),
+            notificationsToggle.heightAnchor.constraint(equalToConstant: 40)
         ])
     }
     
@@ -227,7 +257,18 @@ class SettingsViewController: UIViewController {
     @objc private func signout() {
         // TODO: ADD SIGNOUT FUNCTIONALITY
         performSegue(withIdentifier: logoutSegueIdentifier, sender: self)
-      }
+    }
+    
+    @objc private func toggleNotification() {
+        // TODO: ADD SIGNOUT FUNCTIONALITY
+        print("notifications toggled")
+        isNotiEnabled = !isNotiEnabled
+        let notiTitle = isNotiEnabled ? "Disable Notifications" : "Enable Notifications"
+        let notiColor = isNotiEnabled ? darkRed : background1Light
+        notificationsToggle.backgroundColor = notiColor
+        notificationsToggle.setTitle(notiTitle, for: .normal)
+        
+    }
 
     func createBackButton() -> UIButton {
         let backButton = UIButton(type: .system)

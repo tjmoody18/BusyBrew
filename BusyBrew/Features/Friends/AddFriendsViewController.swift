@@ -22,7 +22,7 @@ class AddFriendsViewController: UIViewController, UITableViewDelegate, UITableVi
     let addFriendField = UITextField()
     let friendsTable = UITableView()
     let friendsCellIdentifier = "FriendsTableViewCellIdentifier"
-    var friendsList: [Friend] = [Friend(uid: "john", name: "jgon", email: "dohn@gmail.com"), Friend(uid: "123", name: "monkey", email: "m@gmail.com")]
+    var friendsList: [Friend] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
