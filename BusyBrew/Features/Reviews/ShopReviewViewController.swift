@@ -333,6 +333,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
         backButton.setTitle("Back", for: .normal)
         backButton.setTitleColor(.black, for: .normal)
         backButton.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        backButton.translatesAutoresizingMaskIntoConstraints = false
         backButton.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
         return backButton
     }

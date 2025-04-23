@@ -303,6 +303,9 @@ class SettingsViewController: UIViewController {
         // TODO: ADD SIGNOUT FUNCTIONALITY
         print("notifications toggled")
         isNotiEnabled = !isNotiEnabled
+        if isNotiEnabled {
+            NotificationManager().requestNotificationPermissions()
+        }
         let notiTitle = isNotiEnabled ? "Disable Notifications" : "Enable Notifications"
         let notiColor = isNotiEnabled ? darkRed : background1Light
         notificationsToggle.backgroundColor = notiColor
