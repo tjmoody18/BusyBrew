@@ -14,15 +14,15 @@ struct User: Codable, Identifiable {
     let uid: String
     var email: String
     var displayName: String
-    var photoURL: String
+    var photoUrl: String
     var favorites: [String] = []
     var friends: [String] = []
     
-    init(uid: String, email: String, displayName: String, photoURL: String, favorites: [String], friends: [String]) {
+    init(uid: String, email: String, displayName: String, photoUrl: String, favorites: [String], friends: [String]) {
         self.uid = uid
         self.email = email
         self.displayName = ""
-        self.photoURL = ""
+        self.photoUrl = ""
         self.favorites = []
         self.friends = []
     }
@@ -34,7 +34,7 @@ struct User: Codable, Identifiable {
             "uid": uid,
             "email": email,
             "displayName": displayName,
-            "photoURL": photoURL,
+            "photoUrl": photoUrl,
             "favorites": favorites,
             "friends": friends
         ]
@@ -49,7 +49,7 @@ extension User {
                  uid: uid,
                  email: email,
                  displayName: "",
-                 photoURL: "",
+                 photoUrl: "",
                  favorites: [],
                  friends: []
             )

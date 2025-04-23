@@ -58,6 +58,7 @@ class LoginViewController: UIViewController {
                 let displayName = Auth.auth().currentUser?.displayName ?? "Guest"
 
                 if await UserManager().fetchUserDocument(uid: authUid) == nil {
+                    print("log in failed made new userdoc with", authUid)
                     UserManager().createUserDocument(uid: authUid, email: authEmail, displayName: displayName)
                 }
             }
