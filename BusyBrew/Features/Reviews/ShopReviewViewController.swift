@@ -48,6 +48,12 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
     
     func setupUI() {
         view.backgroundColor = background3
+//        let backButton = createBackButton()
+//        view.addSubview(backButton)
+//        NSLayoutConstraint.activate([
+//            backButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 60),
+//            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40)
+//        ])
         titleSection()
         reviewSection()
         seperatorSection()
@@ -64,7 +70,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
         pageTitle.translatesAutoresizingMaskIntoConstraints = false
         pageTitle.font = UIFont.systemFont(ofSize: 35, weight: .bold)
         NSLayoutConstraint.activate([
-            pageTitle.topAnchor.constraint(equalTo: view.topAnchor, constant: 45),
+            pageTitle.topAnchor.constraint(equalTo: view.topAnchor, constant: 100),
             pageTitle.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40)
         ])
     }
@@ -267,6 +273,20 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
         }
         return true
     }
+    
+    func createBackButton() -> UIButton {
+        let backButton = UIButton(type: .system)
+        backButton.setTitle("Back", for: .normal)
+        backButton.setTitleColor(.black, for: .normal)
+        backButton.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        backButton.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
+        return backButton
+    }
+
+    @objc func backButtonTapped() {
+        self.dismiss(animated: true)
+    }
+
     
     @objc func takeMedia() {
         let controller = UIAlertController(title:"Media Controller", message: "Add media", preferredStyle: .actionSheet)
