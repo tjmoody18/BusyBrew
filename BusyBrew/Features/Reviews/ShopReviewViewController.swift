@@ -8,6 +8,7 @@
 import UIKit
 import PhotosUI
 import FirebaseAuth
+import FirebaseStorage
 
 class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate {
     
@@ -20,6 +21,10 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
     let submitButton = UIButton(type: .system)
     let seperator = UIView()
     let cafe: Cafe
+    
+    var selectedImages: [UIImage] = []
+    var imagePreviewStack: UIStackView?
+    var photoCountLabel: UILabel?
     
     var onReviewSubmitted: (() -> Void)?
     
@@ -152,7 +157,6 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
     }
     
     func photoSection() {
-        
         photoTitle.text = "Photos"
         photoTitle.textColor = background1
         photoTitle.textAlignment = .left
@@ -163,7 +167,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
             photoTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 400),
             photoTitle.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 40)
         ])
-        
+
         uploadButton.setTitle("upload", for: .normal)
         uploadButton.backgroundColor = background1Light
         uploadButton.contentHorizontalAlignment = .left
@@ -180,6 +184,42 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
             uploadButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 40)
         ])
         uploadButton.addTarget( self, action: #selector(takeMedia), for: .touchUpInside)
+
+
+        // Container to hold image previews and count label
+        let photoContainer = UIView()
+        photoContainer.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(photoContainer)
+        NSLayoutConstraint.activate([
+            photoContainer.topAnchor.constraint(equalTo: uploadButton.bottomAnchor, constant: 10),
+            photoContainer.leadingAnchor.constraint(equalTo: uploadButton.leadingAnchor),
+            photoContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
+            photoContainer.heightAnchor.constraint(greaterThanOrEqualToConstant: 80)
+        ])
+
+        let previewStack = UIStackView()
+        previewStack.axis = .horizontal
+        previewStack.spacing = 10
+        previewStack.translatesAutoresizingMaskIntoConstraints = false
+        photoContainer.addSubview(previewStack)
+        self.imagePreviewStack = previewStack
+        NSLayoutConstraint.activate([
+            previewStack.topAnchor.constraint(equalTo: photoContainer.topAnchor),
+            previewStack.leadingAnchor.constraint(equalTo: photoContainer.leadingAnchor),
+            previewStack.trailingAnchor.constraint(lessThanOrEqualTo: photoContainer.trailingAnchor)
+        ])
+
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 12, weight: .bold)
+        label.textColor = .darkGray
+        label.translatesAutoresizingMaskIntoConstraints = false
+        photoContainer.addSubview(label)
+        self.photoCountLabel = label
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: previewStack.bottomAnchor, constant: 5),
+            label.leadingAnchor.constraint(equalTo: previewStack.leadingAnchor),
+            label.trailingAnchor.constraint(lessThanOrEqualTo: photoContainer.trailingAnchor)
+        ])
     }
     
     func commentSection() {
@@ -190,16 +230,16 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
         self.view.addSubview(commentTitle)
         commentTitle.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            commentTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 525),
+            commentTitle.topAnchor.constraint(equalTo: photoCountLabel!.bottomAnchor, constant: 20),
             commentTitle.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 40)
         ])
-        
+
         commentField.borderStyle = .roundedRect
         commentField.textAlignment = .left
         self.view.addSubview(commentField)
         commentField.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate( [
-            commentField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 575),
+            commentField.topAnchor.constraint(equalTo: photoCountLabel!.bottomAnchor, constant: 20),
             commentField.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 40),
             commentField.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -40),
             commentField.heightAnchor.constraint(equalToConstant: 150)
@@ -226,32 +266,45 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
     }
     
     @objc func submitButtonTapped() {
-        // set date
         if !checkFieldsFilled() { return }
-            
+
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM d, yyyy"
         let currentDate = Date()
         let formattedDate = formatter.string(from: currentDate)
-        
-        // create review object and add
-        
+
         Task {
             print("Current User: \(String(describing: Auth.auth().currentUser))")
             if let user = await UserManager().fetchUserDocument() {
-                let review = Review(
-                    uid: user.uid,
-                    displayName: user.email,
-                    date: formattedDate,
-                    text: commentField.text ?? "",
-                    wifi: numStarsDict["Wifi"]!,
-                    cleanliness: numStarsDict["Clean"]!,
-                    outlets: numStarsDict["Outlet"]!,
-                    photos: [])
-                ReviewManager().createReviewDocument(forCafeId: cafe.uid, review: review)
-                self.onReviewSubmitted?()
-                self.dismiss(animated: true)
-                print("User found: \(user)")
+                var photoURLs: [String] = []
+                let dispatchGroup = DispatchGroup()
+
+                for image in selectedImages {
+                    dispatchGroup.enter()
+                    uploadImageToStorage(image: image) { url in
+                        if let url = url {
+                            photoURLs.append(url)
+                        }
+                        dispatchGroup.leave()
+                    }
+                }
+
+                dispatchGroup.notify(queue: .main) {
+                    let review = Review(
+                        uid: user.uid,
+                        displayName: user.email,
+                        date: formattedDate,
+                        text: self.commentField.text ?? "",
+                        wifi: self.numStarsDict["Wifi"]!,
+                        cleanliness: self.numStarsDict["Clean"]!,
+                        outlets: self.numStarsDict["Outlet"]!,
+                        photos: photoURLs
+                    )
+                    ReviewManager().createReviewDocument(forCafeId: self.cafe.uid, review: review)
+                    self.onReviewSubmitted?()
+                    self.dismiss(animated: true)
+                    print("User found: \(user)")
+                }
             } else {
                 print("Failed to fetch user data")
             }
@@ -314,6 +367,49 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
     
     func uploadMedia(img: UIImage) {
         print("wait database")
+        selectedImages.append(img)
+        DispatchQueue.main.async {
+            let container = UIView()
+            container.translatesAutoresizingMaskIntoConstraints = false
+            container.widthAnchor.constraint(equalToConstant: 60).isActive = true
+            container.heightAnchor.constraint(equalToConstant: 60).isActive = true
+
+            let imageView = UIImageView(image: img)
+            imageView.contentMode = .scaleAspectFill
+            imageView.clipsToBounds = true
+            imageView.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(imageView)
+            NSLayoutConstraint.activate([
+                imageView.topAnchor.constraint(equalTo: container.topAnchor),
+                imageView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+                imageView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                imageView.trailingAnchor.constraint(equalTo: container.trailingAnchor)
+            ])
+
+            let closeButton = UIButton(type: .custom)
+            closeButton.setTitle("✕", for: .normal)
+            closeButton.setTitleColor(.white, for: .normal)
+            closeButton.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+            closeButton.layer.cornerRadius = 10
+            closeButton.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .bold)
+            closeButton.translatesAutoresizingMaskIntoConstraints = false
+            container.addSubview(closeButton)
+            NSLayoutConstraint.activate([
+                closeButton.topAnchor.constraint(equalTo: container.topAnchor, constant: 2),
+                closeButton.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -2),
+                closeButton.widthAnchor.constraint(equalToConstant: 20),
+                closeButton.heightAnchor.constraint(equalToConstant: 20)
+            ])
+            closeButton.addTarget(self, action: #selector(self.removeImage(_:)), for: .touchUpInside)
+            closeButton.tag = self.selectedImages.count - 1
+
+            self.imagePreviewStack?.addArrangedSubview(container)
+            self.updatePhotoCountLabel()
+        }
+    }
+
+    func updatePhotoCountLabel() {
+        photoCountLabel?.text = "\(selectedImages.count) photo(s) selected"
     }
 }
 
@@ -329,5 +425,44 @@ extension ShopReviewViewController: UIImagePickerControllerDelegate, UINavigatio
         dismiss(animated: true, completion: nil)
     }
     
+    @objc func removeImage(_ sender: UIButton) {
+        let index = sender.tag
+        guard index >= 0 && index < selectedImages.count else { return }
+        selectedImages.remove(at: index)
+        imagePreviewStack?.arrangedSubviews[index].removeFromSuperview()
+        updatePhotoCountLabel()
+    }
+    
+    func uploadImageToStorage(image: UIImage, completion: @escaping (String?) -> Void) {
+        let storage = Storage.storage()
+        let storageRef = storage.reference()
+        let imageName = UUID().uuidString
+        let imageRef = storageRef.child("reviewPhotos/\(imageName).jpg")
+
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+            completion(nil)
+            return
+        }
+
+        imageRef.putData(imageData, metadata: nil) { metadata, error in
+            if let error = error {
+                print("Upload error: \(error)")
+                completion(nil)
+                return
+            }
+
+            imageRef.downloadURL { url, error in
+                if let url = url {
+                    completion(url.absoluteString)
+                } else {
+                    completion(nil)
+                }
+            }
+        }
+    }
 }
 
+
+   
+
+   
