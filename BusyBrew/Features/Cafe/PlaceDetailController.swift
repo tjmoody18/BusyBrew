@@ -19,6 +19,8 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
     var rating = 5.0
     let categories = ["wifi quality", "cleanliness", "outlets availability"]
     var reviews = [] as [Review]
+    var cafeListener: ListenerRegistration?
+    var reviewListener: ListenerRegistration?
     
     lazy var chatButton: UIButton = {
         let button = UIButton(type: .system)
@@ -134,6 +136,12 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         reviewsTable.register(ReviewsTableViewCell.self, forCellReuseIdentifier: reviewsCellIdentifier)
         view.backgroundColor = .systemBackground
         setupUI()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        cafeListener?.remove()
+        reviewListener?.remove()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -253,6 +261,8 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
             
             if let cafe = await CafeManager().fetchCafeDocument(uid: place.placeId) {
                 self.cafe = cafe
+                self.listenToCafeStatus()
+                self.listenToReviews()
                 self.reviews = await ReviewManager().fetchAllReviews(forCafeId: cafe.uid)
                 
                 let count = Double(self.reviews.count)
@@ -281,14 +291,11 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
                         self.favButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
                     }
                 }
-                
             } else {
                 print("Failed to fetch cafe data")
                 print("Creating document")
                 let newCafe = Cafe.empty(uid: place.placeId, name: place.name)
                 CafeManager().createCafeDocument(cafe: newCafe)
-                
-                
                 // set up ui after cafe is fetched and set (or created if not found)
                 DispatchQueue.main.async {
                     self.cafe = newCafe
@@ -801,6 +808,43 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         cell.review = Review(uid: review.uid, displayName: review.displayName, date: review.date, text: review.text, wifi: review.wifi, cleanliness: review.cleanliness, outlets: review.outlets, photos: review.photos)
         return cell
     }
+    
+    // LISTENERS to life update status and reviews
+    
+    func listenToCafeStatus() {
+        guard let cafeId = cafe?.uid else { return }
+        cafeListener = Firestore.firestore()
+            .collection("cafes")
+            .document(cafeId)
+            .addSnapshotListener { [weak self] snapshot, error in
+                guard let data = snapshot?.data(),
+                      let newStatus = data["status"] as? String else {
+                    return
+                }
+                DispatchQueue.main.async {
+                    self?.status.text = newStatus
+                }
+            }
+    }
+
+    func listenToReviews() {
+        guard let cafeId = cafe?.uid else { return }
+        reviewListener = Firestore.firestore()
+            .collection("cafes")
+            .document(cafeId)
+            .collection("reviews")
+            .addSnapshotListener { [weak self] snapshot, error in
+                guard let self = self, let documents = snapshot?.documents else { return }
+                self.reviews = documents.compactMap { doc in
+                    try? doc.data(as: Review.self)
+                }
+                DispatchQueue.main.async {
+                    self.reviewsTable.reloadData()
+                    self.numReviews.text = "\(self.reviews.count) reviews"
+                    self.updateRatingsFromReviews()
+                }
+            }
+    }
 }
 
 
@@ -822,3 +866,5 @@ extension PlaceDetailViewController {
       }
   }
 }
+
+    
