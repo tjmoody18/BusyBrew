@@ -30,7 +30,6 @@ class FriendRequestTableViewCell: UITableViewCell {
         backgroundColor = background3
         selectionStyle = .none
 
-        // Profile Image
         profileImageView.translatesAutoresizingMaskIntoConstraints = false
         profileImageView.image = UIImage(named: "cafe.png")
         profileImageView.contentMode = .scaleAspectFill
@@ -39,7 +38,6 @@ class FriendRequestTableViewCell: UITableViewCell {
         profileImageView.widthAnchor.constraint(equalToConstant: 50).isActive = true
         profileImageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
 
-        // Name & Email
         nameLabel.font = .systemFont(ofSize: 16, weight: .bold)
         emailLabel.font = .systemFont(ofSize: 14, weight: .regular)
         nameLabel.textColor = .black
@@ -52,7 +50,6 @@ class FriendRequestTableViewCell: UITableViewCell {
         textStack.spacing = 2
         textStack.alignment = .leading
 
-        // Buttons
         acceptButton.setTitle("Accept", for: .normal)
         acceptButton.setTitleColor(.white, for: .normal)
         acceptButton.backgroundColor = .systemGreen
@@ -74,7 +71,6 @@ class FriendRequestTableViewCell: UITableViewCell {
         buttonStack.spacing = 12
         buttonStack.distribution = .fillEqually
 
-        // Combine Text + Buttons
         let verticalContent = UIStackView(arrangedSubviews: [textStack, buttonStack])
         verticalContent.axis = .vertical
         verticalContent.spacing = 8

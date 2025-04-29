@@ -14,7 +14,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
     var user: User?
     var isFavorite: Bool = false
     var cafe: Cafe?
-//    var currentStatus: String
+    //    var currentStatus: String
     let place: PlaceAnnotation
     var rating = 5.0
     let categories = ["wifi quality", "cleanliness", "outlets availability"]
@@ -125,7 +125,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
     init(place: PlaceAnnotation) {
         self.place = place
         super.init(nibName: nil, bundle: nil)
-//        setupUI()
+        //        setupUI()
     }
     
     
@@ -160,20 +160,20 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
                             }
                             if let testRating = details["rating"] as? Double {
                                 self.rating = testRating
-//                                self.overallRating.text = String(format: "%.1f", self.rating)
+                                //                                self.overallRating.text = String(format: "%.1f", self.rating)
                             }
                             if let newName = details["name"] as? String {
                                 self.nameLabel.text = newName
                             }
                             
-//                            self.setupUI()
-
+                            //                            self.setupUI()
+                            
                             if let photos = details["photos"] as? [[String: Any]],
                                let photoRef = photos.first?["photo_reference"] as? String {
                                 
                                 let maxWidth = 200
                                 let photoURLStr = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=\(maxWidth)&photoreference=\(photoRef)&key=AIzaSyCboeBjmEs9hC45LBdQse8s67u2lByWsn0"
-
+                                
                                 if let photoURL = URL(string: photoURLStr) {
                                     URLSession.shared.dataTask(with: photoURL) { data, response, error in
                                         if let data = data, let image = UIImage(data: data) {
@@ -193,7 +193,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
             } else {
                 print("no placeID found")
                 DispatchQueue.main.async {
-//                    self.setupUI() // fallback setup even if API fails
+                    //                    self.setupUI() // fallback setup even if API fails
                 }
             }
         }
@@ -205,11 +205,11 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         let query = "\(name)"
         let location = "\(latitude),\(longitude)"
         let radius = 100  // meters
-
+        
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let urlStr = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=\(encodedQuery)&location=\(location)&radius=\(radius)&key=\(apiKey)"
         print("api query: \(encodedQuery) @ \(location)")
-
+        
         if let url = URL(string: urlStr) {
             URLSession.shared.dataTask(with: url) { data, response, error in
                 if let data = data,
@@ -219,7 +219,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
                    let placeID = first["place_id"] as? String {
                     completion(placeID)
                     print("Found placeID: \(placeID)")
-
+                    
                 } else {
                     print("placeID not found.")
                     if let data = data {
@@ -237,7 +237,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         let apiKey = "AIzaSyCboeBjmEs9hC45LBdQse8s67u2lByWsn0"
         let fields = "name,formatted_address,rating,opening_hours,photos"
         let urlStr = "https://maps.googleapis.com/maps/api/place/details/json?place_id=\(placeID)&fields=\(fields)&key=\(apiKey)"
-
+        
         if let url = URL(string: urlStr) {
             URLSession.shared.dataTask(with: url) { data, response, error in
                 if let data = data,
@@ -267,15 +267,14 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
                 
                 let count = Double(self.reviews.count)
                 if count > 0 {
-                  let wifiAvg  = self.reviews.map { Double($0.wifi) }.reduce(0,+)/count
-                  let cleanAvg = self.reviews.map { Double($0.cleanliness) }.reduce(0,+)/count
-                  let outAvg   = self.reviews.map { Double($0.outlets) }.reduce(0,+)/count
-                  self.rating  = (wifiAvg + cleanAvg + outAvg) / 3
+                    let wifiAvg = self.reviews.map { Double($0.wifi) }.reduce(0,+)/count
+                    let cleanAvg = self.reviews.map { Double($0.cleanliness) }.reduce(0,+)/count
+                    let outAvg = self.reviews.map { Double($0.outlets) }.reduce(0,+)/count
+                    self.rating = (wifiAvg + cleanAvg + outAvg) / 3
                 } else {
-                  self.rating = 0
+                    self.rating = 0
                 }
-//                self.overallRating.text = String(format: "%.1f", self.rating)
-                self.numReviews.text    = "\(self.reviews.count) reviews"
+                self.numReviews.text = "\(self.reviews.count) reviews"
                 self.reviewsTable.reloadData()
                 
                 print("Cafe found: \(cafe)")
@@ -285,7 +284,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
                 reviewsTable.reloadData()
                 let favFlag = user?.favorites.contains(self.cafe?.uid ?? "") ?? false
                 DispatchQueue.main.async {
-//                    self.setupUI()
+                    //                    self.setupUI()
                     self.isFavorite = favFlag
                     if self.isFavorite {
                         self.favButton.setImage(UIImage(systemName: "heart.fill"), for: .normal)
@@ -301,12 +300,12 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
                     self.cafe = newCafe
                     self.listenToCafeStatus()
                     self.listenToReviews()
-//                    self.setupUI()
+                    //                    self.setupUI()
                 }
             }
         }
     }
-
+    
     
     required init?(coder: NSCoder) {
         fatalError("init(coder has not been implemented")
@@ -317,7 +316,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         let heartImg = isFavorite ? UIImage(systemName: "heart.fill") : UIImage(systemName: "heart")
         favButton.setImage(heartImg, for: .normal)
         
-//        add this cafe to the favorites
+        //        add this cafe to the favorites
         if isFavorite {
             UserManager().addFavorite(uid: user!.uid, data: cafe!.uid)
             NotificationManager().listenForStatusChange(favorites: [cafe!.uid])
@@ -326,8 +325,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
             UserManager().deleteFavorite(uid: user!.uid, data: cafe!.uid)
         }
     }
-    
-    // Open Apple Maps when pressed
+
     @objc func directionsButtonTapped(_ sender: UIButton) {
         let coordinate = place.location.coordinate
         guard let url = URL(string: "http://maps.apple.com/?daddr=\(coordinate.latitude),\(coordinate.longitude)") else {
@@ -338,25 +336,25 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
     }
     
     private func updateRatingsFromReviews() {
-      guard !reviews.isEmpty else {
-        overallRating.text = "No reviews"
-        return
-      }
-      
-      let totalWifi        = reviews.reduce(0) { $0 + $1.wifi }
-      let totalCleanliness = reviews.reduce(0) { $0 + $1.cleanliness }
-      let totalOutlets     = reviews.reduce(0) { $0 + $1.outlets }
-      let count = Double(reviews.count)
-      
-      let avgWifi        = Double(totalWifi) / count
-      let avgCleanliness = Double(totalCleanliness) / count
-      let avgOutlets     = Double(totalOutlets) / count
-      
-      let overallAvg = (avgWifi + avgCleanliness + avgOutlets) / 3.0
-      
-      overallRating.text = String(format: "%.1f", overallAvg)
+        guard !reviews.isEmpty else {
+            overallRating.text = "No reviews"
+            return
+        }
+        
+        let totalWifi        = reviews.reduce(0) { $0 + $1.wifi }
+        let totalCleanliness = reviews.reduce(0) { $0 + $1.cleanliness }
+        let totalOutlets     = reviews.reduce(0) { $0 + $1.outlets }
+        let count = Double(reviews.count)
+        
+        let avgWifi        = Double(totalWifi) / count
+        let avgCleanliness = Double(totalCleanliness) / count
+        let avgOutlets     = Double(totalOutlets) / count
+        
+        let overallAvg = (avgWifi + avgCleanliness + avgOutlets) / 3.0
+        
+        overallRating.text = String(format: "%.1f", overallAvg)
     }
-
+    
     
     @objc func reportStatusButtonTapped(_ sender: UIButton) {
         let controller = UIAlertController(
@@ -374,8 +372,8 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
                              { (action) in self.submitStatus(status: "Moderately Busy")} )
         controller.addAction(UIAlertAction(title: "Not Busy", style: .default)
                              { (action) in self.submitStatus(status: "Not Busy")} )
-
-             present(controller, animated: true)
+        
+        present(controller, animated: true)
     }
     
     
@@ -407,9 +405,9 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         self.cafe?.status = status
         self.status.text = status
         print("CAFE: \(String(describing: cafe))")
-//        self.currentStatus = status
+        //        self.currentStatus = status
     }
-
+    
     func reviewItem(review: Review) -> UIView {
         let reviewItem = UIView()
         reviewItem.translatesAutoresizingMaskIntoConstraints = false
@@ -443,7 +441,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         imageStack.translatesAutoresizingMaskIntoConstraints = false
         imageStack.axis = .horizontal
         imageStack.spacing = 10
-
+        
         reviewItem.addSubview(imageStack)
         if review.photos.count > 0 {
             for photo in review.photos {
@@ -477,7 +475,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
             textLabel.topAnchor.constraint(equalTo: ratingStack.bottomAnchor, constant: 3),
             
             imageStack.leadingAnchor.constraint(equalTo: reviewItem.leadingAnchor),
-//            imageStack.trailingAnchor.constraint(equalTo: reviewItem.trailingAnchor),
+            //            imageStack.trailingAnchor.constraint(equalTo: reviewItem.trailingAnchor),
             imageStack.topAnchor.constraint(equalTo: textLabel.bottomAnchor, constant: 8),
             
             reviewItem.bottomAnchor.constraint(equalTo: imageStack.bottomAnchor)
@@ -503,7 +501,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
         scrollView.isScrollEnabled = true
-
+        
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.topAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -513,7 +511,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         
         let contentBody = UIStackView()
         contentBody.translatesAutoresizingMaskIntoConstraints = false
- 
+        
         contentBody.axis = .vertical
         let topSection = UIView()
         topSection.translatesAutoresizingMaskIntoConstraints = false
@@ -524,9 +522,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         let lesserSpacing: [NSAttributedString.Key: Any] = [
             .kern: -1.0  // reduce the letter spacing
         ]
-//        nameLabel.attributedText = NSAttributedString(string: place.name, attributes: attributes)
-//        addressLabel.text = place.address
-        
+
         let contactStackView = UIStackView()
         contactStackView.translatesAutoresizingMaskIntoConstraints = false
         contactStackView.axis = .horizontal
@@ -536,9 +532,6 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         // contactStackView.addArrangedSubview(addressLabel)
         contactStackView.addArrangedSubview(directionsButton)
         
-//        directionsButton.addTarget(self, action: #selector(directionsButtonTapped), for: .touchUpInside)
-        
-        /// #STATUS LABEL
         let statusLabel = UILabel()
         statusLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         statusLabel.attributedText = NSAttributedString(string: "current status:", attributes: lesserSpacing)
@@ -621,24 +614,24 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         topSection.addSubview(ratingView)
         topSection.addSubview(detailedRatingView)
         topSection.addSubview(chatButton)
-
+        
         NSLayoutConstraint.activate([
             chatButton.topAnchor.constraint(equalTo: reportStatusButton.bottomAnchor, constant: 10),
             chatButton.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
             chatButton.trailingAnchor.constraint(equalTo: topSection.trailingAnchor),
-//            chatButton.heightAnchor.constraint(equalToConstant: 40)
+            //            chatButton.heightAnchor.constraint(equalToConstant: 40)
         ])
-
+        
         
         cafeImage.heightAnchor.constraint(equalToConstant: 150).isActive = true
         cafeImage.widthAnchor.constraint(equalTo: topSection.widthAnchor).isActive = true
         
         favButton.addTarget(self, action: #selector(favButtonTapped), for: .touchUpInside)
         // REVIEWS
-//        let reviewSection = UIView()
-//        reviewSection.translatesAutoresizingMaskIntoConstraints = false
-//        reviewSection.axis = .vertical
-//        contentBody.addArrangedSubview(reviewSection)
+        //        let reviewSection = UIView()
+        //        reviewSection.translatesAutoresizingMaskIntoConstraints = false
+        //        reviewSection.axis = .vertical
+        //        contentBody.addArrangedSubview(reviewSection)
         
         let reviewBody = UIStackView()
         reviewBody.translatesAutoresizingMaskIntoConstraints = false
@@ -696,7 +689,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
             contentBody.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -80),
             contentBody.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor)
         ])
-
+        
         NSLayoutConstraint.activate([
             topSection.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor),
             topSection.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor),
@@ -729,7 +722,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
             cafeImage.topAnchor.constraint(equalTo: contactStackView.bottomAnchor, constant: 10),
             cafeImage.heightAnchor.constraint(equalToConstant: 150)
         ])
-
+        
         
         NSLayoutConstraint.activate([
             statusLabel.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
@@ -761,35 +754,35 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
             
             topSection.bottomAnchor.constraint(equalTo: detailedRatingView.bottomAnchor)
         ])
-
+        
         NSLayoutConstraint.activate([
             reviewBody.leadingAnchor.constraint(equalTo: topSection.leadingAnchor),
             reviewBody.trailingAnchor.constraint(equalTo: topSection.trailingAnchor),
             reviewBody.topAnchor.constraint(equalTo: topSection.bottomAnchor)
         ])
         
-//        NSLayoutConstraint.activate([
-//            reviewBody.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor, constant: 40),
-//            reviewBody.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor, constant: -40),
-//            reviewBody.topAnchor.constraint(equalTo: reviewSection.topAnchor, constant: 35),
-//        ])
+        //        NSLayoutConstraint.activate([
+        //            reviewBody.leadingAnchor.constraint(equalTo: contentBody.leadingAnchor, constant: 40),
+        //            reviewBody.trailingAnchor.constraint(equalTo: contentBody.trailingAnchor, constant: -40),
+        //            reviewBody.topAnchor.constraint(equalTo: reviewSection.topAnchor, constant: 35),
+        //        ])
         
         NSLayoutConstraint.activate([
-//            reviewTitleAndButton.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
-//            reviewTitleAndButton.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor)
+            //            reviewTitleAndButton.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
+            //            reviewTitleAndButton.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor)
             reviewTitleAndButton.widthAnchor.constraint(equalTo: reviewBody.widthAnchor)
         ])
         
         NSLayoutConstraint.activate([
-//            numReviews.topAnchor.constraint(equalTo: reviewTitleAndButton.bottomAnchor, constant: 20),
+            //            numReviews.topAnchor.constraint(equalTo: reviewTitleAndButton.bottomAnchor, constant: 20),
             numReviews.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
             numReviews.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor),
         ])
         
         NSLayoutConstraint.activate([
-//            reviewDisplay.topAnchor.constraint(equalTo: numReviews.bottomAnchor, constant: 5),
-//            reviewDisplay.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
-//            reviewDisplay.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor),
+            //            reviewDisplay.topAnchor.constraint(equalTo: numReviews.bottomAnchor, constant: 5),
+            //            reviewDisplay.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
+            //            reviewDisplay.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor),
             
             reviewsTable.leadingAnchor.constraint(equalTo: reviewBody.leadingAnchor),
             reviewsTable.trailingAnchor.constraint(equalTo: reviewBody.trailingAnchor),
@@ -803,15 +796,13 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         print(reviews.count)
         return reviews.count
     }
-
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = reviewsTable.dequeueReusableCell(withIdentifier: reviewsCellIdentifier, for: indexPath) as! ReviewsTableViewCell
         let review = reviews[indexPath.row]
         cell.review = Review(uid: review.uid, displayName: review.displayName, date: review.date, text: review.text, wifi: review.wifi, cleanliness: review.cleanliness, outlets: review.outlets, photos: review.photos)
         return cell
     }
-    
-    // LISTENERS to life update status and reviews
     
     func listenToCafeStatus() {
         guard let cafeId = cafe?.uid else { return }
@@ -828,7 +819,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
                 }
             }
     }
-
+    
     func listenToReviews() {
         guard let cafeId = cafe?.uid else { return }
         reviewListener = Firestore.firestore()
@@ -850,22 +841,22 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
 }
 
 extension PlaceDetailViewController {
-  @objc func openCafeChat() {
-    guard let cafe = self.cafe else { return }
-    let uid = Auth.auth().currentUser?.uid ?? ""
-    Firestore
-      .firestore()
-      .collection("users")
-      .document(uid)
-      .getDocument { snapshot, error in
-        let displayName = snapshot?.data()?["displayName"] as? String ?? "Guest"
-        let chatVC = CafeChatViewController()
-        chatVC.cafeId      = cafe.uid
-        chatVC.displayName = displayName
-        let nav = UINavigationController(rootViewController: chatVC)
-        self.present(nav, animated: true)
-      }
-  }
+    @objc func openCafeChat() {
+        guard let cafe = self.cafe else { return }
+        let uid = Auth.auth().currentUser?.uid ?? ""
+        Firestore
+            .firestore()
+            .collection("users")
+            .document(uid)
+            .getDocument { snapshot, error in
+                let displayName = snapshot?.data()?["displayName"] as? String ?? "Guest"
+                let chatVC = CafeChatViewController()
+                chatVC.cafeId      = cafe.uid
+                chatVC.displayName = displayName
+                let nav = UINavigationController(rootViewController: chatVC)
+                self.present(nav, animated: true)
+            }
+    }
 }
 
-    
+

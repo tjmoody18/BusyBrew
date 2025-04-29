@@ -35,32 +35,24 @@ class ChatMessageCell: UITableViewCell {
 
     private func setupViews() {
         selectionStyle = .none
-
-        // Bubble background
         bubbleBackground.layer.cornerRadius = 16
         bubbleBackground.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(bubbleBackground)
 
-        // Name
         nameLabel.font = .boldSystemFont(ofSize: 13)
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         bubbleBackground.addSubview(nameLabel)
 
-        // Message
         messageLabel.numberOfLines = 0
         messageLabel.font = .systemFont(ofSize: 16)
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
         bubbleBackground.addSubview(messageLabel)
 
-        // Time
         timeLabel.font = .systemFont(ofSize: 12)
         timeLabel.translatesAutoresizingMaskIntoConstraints = false
         bubbleBackground.addSubview(timeLabel)
 
-        // ** THIS LINE fixes wrapping: cap the bubble’s max width to 75% of the cell **
         bubbleBackground.widthAnchor.constraint(lessThanOrEqualTo: contentView.widthAnchor, multiplier: 0.75).isActive = true
-
-        // Layout the bubble vertically to the cell, and let its horizontal anchors get set later
         NSLayoutConstraint.activate([
             bubbleBackground.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             bubbleBackground.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
@@ -81,11 +73,8 @@ class ChatMessageCell: UITableViewCell {
     }
 
     private func updateConstraintsForSide() {
-        // deactivate any old ones
         leftConstraint?.isActive = false
         rightConstraint?.isActive = false
-
-        // recreate
         leftConstraint  = bubbleBackground.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16)
         rightConstraint = bubbleBackground.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
 

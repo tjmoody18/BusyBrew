@@ -113,8 +113,6 @@ class FriendRequestsViewController: UIViewController, UITableViewDelegate, UITab
         self.dismiss(animated: true)
     }
 
-    // MARK: - TableView
-
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return requestsList.count
     }
@@ -131,7 +129,6 @@ class FriendRequestsViewController: UIViewController, UITableViewDelegate, UITab
         }
         return cell
     }
-
 
     func acceptTapped(request: Request) {
         let requesterUID = request.uid

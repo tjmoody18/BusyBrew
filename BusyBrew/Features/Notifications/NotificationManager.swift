@@ -57,13 +57,10 @@ class NotificationManager {
             else {
                 return
             }
-                
-                // check if new status is same as old status
+
                 if let oldStatus = self.cafeStatusCache[cafeId], oldStatus == newStatus {
                     return
                 }
-                
-                // update old status
                 self.cafeStatusCache[cafeId] = newStatus
                 
                 self.sendNotification(title: "\(data["name"] as? String ?? "Favorites") Status Update!", body: "\(newStatus)")

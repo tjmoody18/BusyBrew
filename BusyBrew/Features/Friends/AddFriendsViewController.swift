@@ -30,7 +30,6 @@ class AddFriendsViewController: UIViewController, UITableViewDelegate, UITableVi
         friendsTable.delegate = self
         friendsTable.register(FriendsTableViewCell.self, forCellReuseIdentifier: friendsCellIdentifier)
         setupUI()
-        // Do any additional setup after loading the view.
     }
     
     func setupUI() {
