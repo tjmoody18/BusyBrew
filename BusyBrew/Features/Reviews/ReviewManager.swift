@@ -10,6 +10,7 @@ import Foundation
 import FirebaseCore
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseStorage
 
 class ReviewManager {
     
@@ -63,4 +64,10 @@ class ReviewManager {
                 return []
             }
         }
+    
+    func createEmptyReviewReference(forCafeId cafeId: String) -> DocumentReference {
+        return db.collection("cafes").document(cafeId).collection("reviews").document()
+    }
 }
+
+ 

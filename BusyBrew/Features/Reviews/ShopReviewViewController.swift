@@ -274,43 +274,39 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
     
     @objc func submitButtonTapped() {
         if !checkFieldsFilled() { return }
-
+        
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM d, yyyy"
         let currentDate = Date()
         let formattedDate = formatter.string(from: currentDate)
-
+        
         Task {
-            print("Current User: \(String(describing: Auth.auth().currentUser))")
             if let user = await UserManager().fetchUserDocument() {
-                var photoURLs: [String] = []
-                let dispatchGroup = DispatchGroup()
 
-                for image in selectedImages {
-                    dispatchGroup.enter()
-                    uploadImageToStorage(image: image) { url in
-                        if let url = url {
-                            photoURLs.append(url)
-                        }
-                        dispatchGroup.leave()
-                    }
-                }
-
-                dispatchGroup.notify(queue: .main) {
-                    let review = Review(
-                        uid: user.uid,
-                        displayName: user.email,
-                        date: formattedDate,
-                        text: self.commentField.text ?? "",
-                        wifi: self.numStarsDict["Wifi"]!,
-                        cleanliness: self.numStarsDict["Clean"]!,
-                        outlets: self.numStarsDict["Outlet"]!,
-                        photos: photoURLs
-                    )
+                var review = Review(
+                    uid: user.uid,
+                    displayName: user.email,
+                    date: formattedDate,
+                    text: self.commentField.text ?? "",
+                    wifi: self.numStarsDict["Wifi"]!,
+                    cleanliness: self.numStarsDict["Clean"]!,
+                    outlets: self.numStarsDict["Outlet"]!,
+                    photos: []
+                )
+                
+                let reviewRef = ReviewManager.shared.createEmptyReviewReference(forCafeId: self.cafe.uid)
+                review.id = reviewRef.documentID
+                
+                do {
+                    let uploadedUrls = try await self.storeReviewImages(for: review.id!, images: self.selectedImages)
+                    review.photos = uploadedUrls
+                    
                     ReviewManager().createReviewDocument(forCafeId: self.cafe.uid, review: review)
+                    
                     self.onReviewSubmitted?()
                     self.dismiss(animated: true)
-                    print("User found: \(user)")
+                } catch {
+                    print("Error uploading images: \(error.localizedDescription)")
                 }
             } else {
                 print("Failed to fetch user data")
@@ -372,7 +368,9 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
         
         for result in results {
             result.itemProvider.loadObject(ofClass: UIImage.self, completionHandler: {(object, error) in
+                
                 if let img = object as? UIImage {
+                    
                     self.uploadMedia(img: img)
                 }})
         }
@@ -391,6 +389,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
     func uploadMedia(img: UIImage) {
         print("wait database")
         selectedImages.append(img)
+        
         DispatchQueue.main.async {
             let container = UIView()
             container.translatesAutoresizingMaskIntoConstraints = false
@@ -458,32 +457,22 @@ extension ShopReviewViewController: UIImagePickerControllerDelegate, UINavigatio
         updatePhotoCountLabel()
     }
     
-    func uploadImageToStorage(image: UIImage, completion: @escaping (String?) -> Void) {
-        let storage = Storage.storage()
-        let storageRef = storage.reference()
-        let imageName = UUID().uuidString
-        let imageRef = storageRef.child("reviewPhotos/\(imageName).jpg")
+    func storeReviewImages(for reviewId: String, images: [UIImage]) async throws -> [String] {
+        var uploadedUrls: [String] = []
 
-        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
-            completion(nil)
-            return
+        for (index, image) in images.enumerated() {
+            guard let imageData = image.jpegData(compressionQuality: 0.8) else { continue }
+            let imageReference = Storage.storage().reference(withPath: "reviews/\(reviewId)_\(index).png")
+
+            let metaData = StorageMetadata()
+            metaData.contentType = "image/png"
+
+            _ = try await imageReference.putDataAsync(imageData, metadata: metaData)
+            let url = try await imageReference.downloadURL()
+            uploadedUrls.append(url.absoluteString)
         }
 
-        imageRef.putData(imageData, metadata: nil) { metadata, error in
-            if let error = error {
-                print("Upload error: \(error)")
-                completion(nil)
-                return
-            }
-
-            imageRef.downloadURL { url, error in
-                if let url = url {
-                    completion(url.absoluteString)
-                } else {
-                    completion(nil)
-                }
-            }
-        }
+        return uploadedUrls
     }
 }
 
