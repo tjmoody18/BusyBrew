@@ -131,6 +131,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        hideKeyboardOnTap()
         reviewsTable.dataSource = self
         reviewsTable.delegate = self
         reviewsTable.register(ReviewsTableViewCell.self, forCellReuseIdentifier: reviewsCellIdentifier)

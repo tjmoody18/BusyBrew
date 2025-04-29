@@ -31,6 +31,7 @@ class CafeChatViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     setupUI()
+    hideKeyboardOnTap()
     fetchMessages()
     registerForKeyboardNotifications()
   }

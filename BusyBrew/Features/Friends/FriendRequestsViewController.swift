@@ -26,6 +26,7 @@ class FriendRequestsViewController: UIViewController, UITableViewDelegate, UITab
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        hideKeyboardOnTap()
         requestsTable.dataSource = self
         requestsTable.delegate = self
         requestsTable.register(FriendRequestTableViewCell.self, forCellReuseIdentifier: cellIdentifier)

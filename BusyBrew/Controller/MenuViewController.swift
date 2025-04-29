@@ -19,6 +19,7 @@ class MenuViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        hideKeyboardOnTap()
         // Do any additional setup after loading the view.
     }
     

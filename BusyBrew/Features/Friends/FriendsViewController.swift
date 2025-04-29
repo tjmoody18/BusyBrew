@@ -333,6 +333,7 @@ class FriendsViewController: UIViewController, UITableViewDelegate, UITableViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        hideKeyboardOnTap()
         friendsTable.dataSource = self
         friendsTable.delegate = self
         friendsTable.register(FriendsTableViewCell.self, forCellReuseIdentifier: friendsCellIdentifier)

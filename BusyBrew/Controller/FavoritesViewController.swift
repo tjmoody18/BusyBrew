@@ -33,6 +33,7 @@ class FavoritesViewController: UIViewController, UITableViewDelegate, UITableVie
         favoritesTable.dataSource = self
         favoritesTable.delegate = self
         getFavorites()
+        hideKeyboardOnTap()
     }
     
     func setupUI() {

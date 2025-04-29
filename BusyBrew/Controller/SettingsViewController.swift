@@ -36,6 +36,7 @@ class SettingsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        hideKeyboardOnTap()
         Task {
             if let user = await UserManager().fetchUserDocument() {
                 self.user = user

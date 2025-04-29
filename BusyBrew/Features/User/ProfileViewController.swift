@@ -21,6 +21,7 @@ class ProfileViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        hideKeyboardOnTap()
         setupUI()
         fetchProfileData()
     }

@@ -46,6 +46,7 @@ class ShopReviewViewController: UIViewController, PHPickerViewControllerDelegate
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        hideKeyboardOnTap()
         print("SHOPVIEWCONTROLLER: \(cafe)")
         setupUI()
         // Do any additional setup after loading the view.

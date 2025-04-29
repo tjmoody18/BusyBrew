@@ -80,7 +80,7 @@ class HomeViewController: UIViewController, CLLocationManagerDelegate, UITextFie
         
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        hideKeyboardOnTap()
         Task {
             if let user = await UserManager().fetchUserDocument() {
                 print("User found: \(user)")
