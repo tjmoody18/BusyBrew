@@ -336,8 +336,9 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
     }
     
     private func updateRatingsFromReviews() {
+<<<<<<< HEAD
         guard !reviews.isEmpty else {
-            overallRating.text = "No reviews"
+            overallRating.text = "None"
             return
         }
         
