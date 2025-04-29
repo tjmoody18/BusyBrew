@@ -18,6 +18,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
     let place: PlaceAnnotation
     var rating = 5.0
     let categories = ["wifi quality", "cleanliness", "outlets availability"]
+    var categoryScore: [UILabel] = [UILabel(), UILabel(), UILabel()]
     var reviews = [] as [Review]
     var cafeListener: ListenerRegistration?
     var reviewListener: ListenerRegistration?
@@ -351,7 +352,9 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         let avgOutlets     = Double(totalOutlets) / count
         
         let overallAvg = (avgWifi + avgCleanliness + avgOutlets) / 3.0
-        
+        categoryScore[0].text = String(format: "%.1f/5", avgWifi)
+        categoryScore[1].text = String(format: "%.1f/5", avgCleanliness)
+        categoryScore[2].text = String(format: "%.1f/5", avgOutlets)
         overallRating.text = String(format: "%.1f", overallAvg)
     }
     
@@ -567,6 +570,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         detailedRatingView.addSubview(detailedContentView)
         
         var lastLabel: UILabel? = nil
+        var i: Int = 0
         for category in categories {
             let labelView = UIView()
             labelView.translatesAutoresizingMaskIntoConstraints = false
@@ -575,11 +579,13 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
             label.translatesAutoresizingMaskIntoConstraints = false
             label.textColor = background4
             label.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+            
             let score = UILabel()
-            score.attributedText = NSAttributedString(string: "5/5", attributes: lesserSpacing)
+            score.attributedText = NSAttributedString(string: "N/A", attributes: lesserSpacing)
             score.translatesAutoresizingMaskIntoConstraints = false
             score.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
-            
+            categoryScore[i] = score
+            i += 1
             detailedContentView.addSubview(labelView)
             labelView.addSubview(label)
             labelView.addSubview(score)
