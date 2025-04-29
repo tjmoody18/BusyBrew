@@ -64,6 +64,10 @@ class AddFriendsViewController: UIViewController, UITableViewDelegate, UITableVi
         addFriendField.borderStyle = .roundedRect
         addFriendField.font = .systemFont(ofSize: 14, weight: .regular)
         
+        // disable auto caps and autocorrection
+        addFriendField.autocapitalizationType = .none
+        addFriendField.autocorrectionType = .no
+        
         let addButton = UIButton(type: .system)
         var config = UIButton.Configuration.filled()
         config.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)

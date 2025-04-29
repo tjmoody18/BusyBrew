@@ -34,16 +34,36 @@ class ReviewsTableViewCell: UITableViewCell {
         date.text = review?.date
         ratingStack.text = "wifi availability: \(review?.wifi ?? 0)/5    cleanliness: \( review?.cleanliness ?? 0)/5    outlets availability: \(review?.outlets ?? 0)/5"
         userComments.text = review?.text
-        if let review = review, review.photos.count > 0 {
-            for photo in review.photos {
-                let image = UIImage(named: photo)
-                let imageView = UIImageView(image: image)
+        
+     
+        imageStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
+        if let review, review.photos.count > 0 {
+            
+            for photoUrlString in review.photos {
+                let imageView = UIImageView()
                 imageView.translatesAutoresizingMaskIntoConstraints = false
-                imageView.contentMode = .scaleToFill
+                imageView.contentMode = .scaleAspectFill
                 imageView.clipsToBounds = true
                 imageView.widthAnchor.constraint(equalToConstant: 100).isActive = true
                 imageView.heightAnchor.constraint(equalToConstant: 60).isActive = true
                 imageStack.addArrangedSubview(imageView)
+
+                if let url = URL(string: photoUrlString) {
+                    URLSession.shared.dataTask(with: url) { data, response, error in
+                        if let error = error {
+                            print("Failed to load image: \(error.localizedDescription)")
+                            return
+                        }
+                        guard let data = data, let image = UIImage(data: data) else {
+                            print("Failed to convert data to UIImage")
+                            return
+                        }
+                        DispatchQueue.main.async {
+                            imageView.image = image
+                        }
+                    }.resume()
+                }
             }
         }
     }

@@ -102,6 +102,15 @@ class SettingsViewController: UIViewController {
         passwordTextField.textContentType = .password
         emailTextField.text = email
         phoneTextField.text = phone
+        
+        // disable auto caps, autocomplete, spell check
+        userTextField.autocapitalizationType = .none
+        userTextField.autocorrectionType = .no
+        userTextField.spellCheckingType = .no
+        emailTextField.autocapitalizationType = .none
+        emailTextField.autocorrectionType = .no
+        emailTextField.spellCheckingType = .no
+        phoneTextField.keyboardType = .phonePad
 
         let userTitle = UILabel()
         userTitle.translatesAutoresizingMaskIntoConstraints = false

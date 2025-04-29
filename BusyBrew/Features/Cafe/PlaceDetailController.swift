@@ -18,6 +18,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
     let place: PlaceAnnotation
     var rating = 5.0
     let categories = ["wifi quality", "cleanliness", "outlets availability"]
+    var categoryScore: [UILabel] = [UILabel(), UILabel(), UILabel()]
     var reviews = [] as [Review]
     var cafeListener: ListenerRegistration?
     var reviewListener: ListenerRegistration?
@@ -352,7 +353,9 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         let avgOutlets     = Double(totalOutlets) / count
         
         let overallAvg = (avgWifi + avgCleanliness + avgOutlets) / 3.0
-        
+        categoryScore[0].text = String(format: "%.1f/5", avgWifi)
+        categoryScore[1].text = String(format: "%.1f/5", avgCleanliness)
+        categoryScore[2].text = String(format: "%.1f/5", avgOutlets)
         overallRating.text = String(format: "%.1f", overallAvg)
     }
     
@@ -408,83 +411,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         print("CAFE: \(String(describing: cafe))")
         //        self.currentStatus = status
     }
-    
-    func reviewItem(review: Review) -> UIView {
-        let reviewItem = UIView()
-        reviewItem.translatesAutoresizingMaskIntoConstraints = false
-        let username = UILabel()
-        username.translatesAutoresizingMaskIntoConstraints = false
-        username.text = review.displayName
-        username.font = UIFont.systemFont(ofSize: 16, weight: .bold)
-        
-        let date = UILabel()
-        date.translatesAutoresizingMaskIntoConstraints = false
-        date.text = review.date
-        date.textColor = background1
-        date.font = UIFont.systemFont(ofSize: 10, weight: .semibold)
-        
-        let ratingStack = UILabel()
-        ratingStack.translatesAutoresizingMaskIntoConstraints = false
-        ratingStack.text = "wifi availability: \(review.wifi)/5    cleanliness: \(review.cleanliness)/5    outlets availability: \(review.outlets)/5"
-        ratingStack.font = UIFont.systemFont(ofSize: 10, weight: .semibold)
-        
-        let textLabel = UILabel()
-        textLabel.translatesAutoresizingMaskIntoConstraints = false
-        textLabel.text = review.text
-        textLabel.font = UIFont.systemFont(ofSize: 10, weight: .regular)
-        
-        reviewItem.addSubview(username)
-        reviewItem.addSubview(date)
-        reviewItem.addSubview(ratingStack)
-        reviewItem.addSubview(textLabel)
-        
-        let imageStack = UIStackView()
-        imageStack.translatesAutoresizingMaskIntoConstraints = false
-        imageStack.axis = .horizontal
-        imageStack.spacing = 10
-        
-        reviewItem.addSubview(imageStack)
-        if review.photos.count > 0 {
-            for photo in review.photos {
-                let image = UIImage(named: photo)
-                let imageView = UIImageView(image: image)
-                imageView.translatesAutoresizingMaskIntoConstraints = false
-                imageView.contentMode = .scaleToFill
-                imageView.clipsToBounds = true
-                imageView.widthAnchor.constraint(equalToConstant: 100).isActive = true
-                imageView.heightAnchor.constraint(equalToConstant: 60).isActive = true
-                imageStack.addArrangedSubview(imageView)
-            }
-        }
-        
-        
-        NSLayoutConstraint.activate([
-            username.leadingAnchor.constraint(equalTo: reviewItem.leadingAnchor),
-            username.trailingAnchor.constraint(equalTo: reviewItem.trailingAnchor),
-            username.topAnchor.constraint(equalTo: reviewItem.topAnchor),
-            
-            date.leadingAnchor.constraint(equalTo: reviewItem.leadingAnchor),
-            date.trailingAnchor.constraint(equalTo: reviewItem.trailingAnchor),
-            date.topAnchor.constraint(equalTo: username.bottomAnchor, constant: 1),
-            
-            ratingStack.leadingAnchor.constraint(equalTo: reviewItem.leadingAnchor),
-            ratingStack.trailingAnchor.constraint(equalTo: reviewItem.trailingAnchor),
-            ratingStack.topAnchor.constraint(equalTo: date.bottomAnchor, constant: 1),
-            
-            textLabel.leadingAnchor.constraint(equalTo: reviewItem.leadingAnchor),
-            textLabel.trailingAnchor.constraint(equalTo: reviewItem.trailingAnchor),
-            textLabel.topAnchor.constraint(equalTo: ratingStack.bottomAnchor, constant: 3),
-            
-            imageStack.leadingAnchor.constraint(equalTo: reviewItem.leadingAnchor),
-            //            imageStack.trailingAnchor.constraint(equalTo: reviewItem.trailingAnchor),
-            imageStack.topAnchor.constraint(equalTo: textLabel.bottomAnchor, constant: 8),
-            
-            reviewItem.bottomAnchor.constraint(equalTo: imageStack.bottomAnchor)
-        ])
-        
-        return reviewItem
-    }
-    
+
     
     func createSeparator() -> UIView {
         let separator = UIView()
@@ -568,6 +495,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
         detailedRatingView.addSubview(detailedContentView)
         
         var lastLabel: UILabel? = nil
+        var i: Int = 0
         for category in categories {
             let labelView = UIView()
             labelView.translatesAutoresizingMaskIntoConstraints = false
@@ -576,11 +504,13 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
             label.translatesAutoresizingMaskIntoConstraints = false
             label.textColor = background4
             label.font = UIFont.systemFont(ofSize: 10, weight: .bold)
+            
             let score = UILabel()
-            score.attributedText = NSAttributedString(string: "5/5", attributes: lesserSpacing)
+            score.attributedText = NSAttributedString(string: "N/A", attributes: lesserSpacing)
             score.translatesAutoresizingMaskIntoConstraints = false
             score.font = UIFont.systemFont(ofSize: 24, weight: .semibold)
-            
+            categoryScore[i] = score
+            i += 1
             detailedContentView.addSubview(labelView)
             labelView.addSubview(label)
             labelView.addSubview(score)
