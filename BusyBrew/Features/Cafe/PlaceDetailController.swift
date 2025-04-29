@@ -160,7 +160,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
                             }
                             if let testRating = details["rating"] as? Double {
                                 self.rating = testRating
-                                self.overallRating.text = String(format: "%.1f", self.rating)
+//                                self.overallRating.text = String(format: "%.1f", self.rating)
                             }
                             if let newName = details["name"] as? String {
                                 self.nameLabel.text = newName
@@ -274,7 +274,7 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
                 } else {
                   self.rating = 0
                 }
-                self.overallRating.text = String(format: "%.1f", self.rating)
+//                self.overallRating.text = String(format: "%.1f", self.rating)
                 self.numReviews.text    = "\(self.reviews.count) reviews"
                 self.reviewsTable.reloadData()
                 
@@ -299,6 +299,8 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
                 // set up ui after cafe is fetched and set (or created if not found)
                 DispatchQueue.main.async {
                     self.cafe = newCafe
+                    self.listenToCafeStatus()
+                    self.listenToReviews()
 //                    self.setupUI()
                 }
             }
@@ -846,7 +848,6 @@ class PlaceDetailViewController: UIViewController, UITableViewDataSource, UITabl
             }
     }
 }
-
 
 extension PlaceDetailViewController {
   @objc func openCafeChat() {
